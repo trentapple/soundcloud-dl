@@ -1,0 +1,18 @@
+#!/bin/bash
+# Author: FlyinGrub
+# Check my github : https://github.com/flyingrub/soundcloud-dl
+# Share it if you like ;)
+##############################################################
+echo ''
+echo 'Soundcloud Downloader Installer'
+echo ''
+echo ''
+sudo apt-get update
+sudo apt-get install curl
+sudo apt-get install eyeD3
+sudo cp scdl /bin/scdl
+sudo chmod +x /bin/scdl
+echo ''
+echo ''
+echo 'Done!'
+echo 'Now, just type 'scdl [LINK]''

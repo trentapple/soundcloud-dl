@@ -9,16 +9,20 @@ It should work with iOS, OS X, Linux.
 System requirements
 --------------
 * Unix like OS with a proper shell
-* URL (Highly recommended) or wget
+* cURL (Highly recommended) or wget
 * Tools wich are preinstalled on linux (I don't know  for OS X) : `sed` ; `tail` ; `tr` ; `echo` ; `grep` ; `head` ; `cut` ; `sort` ; `uniq` .
 
 
 Required tools
 --------------
-* Update the package list : `sudo apt-get update`
-* Install Recode `sudo apt-get install recode`
-* Install eyeD3 `sudo apt-get install eyeD3`
-* Install cURL `sudo apt-get install curl`
+Linux Easy Installation :
+___
+* You can use the auto installer : `./install`
+
+MacOS :
+___
+* You will need `eyeD3` and `curl` 
+
 
 Instructions
 --------------
@@ -26,7 +30,8 @@ Instructions
 * Unzip
 * Place scdl.sh where you want to download the music or add a `cd /placewhereyouwanttodownloadmusic` at the begining of the script
 * Apply executable permissions `chmod +x scdl.sh`
-* Usage: `./scdl.sh [URL]`
+* Usage: `./scdl [URL]` or `scdl [URL]` if you have installed it with the installer
+
 
 Features
 --------------
@@ -41,6 +46,7 @@ Features
 * The script stop when he see one song that have already been downloaded
 * You can use it as a sync script as i do with my Raspberry PI, each night it launch the script with my users profile and if new song as been added it download them and stop when it encounter a song that is already downloaded ;).
 
+
 Changelog
 --------------
 18/01/2014 :
@@ -54,9 +60,11 @@ don't know the date... :
 18/03/2014 :
 * User's like download support.
 
+
 More information
 --------------
 The script cannot handle letters like `û` cause to recode. But if i remove it, instead of `&` you will have `&amp;` (the html code of `&`) and as i think there is more `&` than `û` i prefer to let it...
+
 
 License
 --------------
