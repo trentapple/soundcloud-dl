@@ -1,10 +1,10 @@
 Souncloud music downloader
 ==============
-
 Description
 --------------
 This shell script is able to download music from http://www.soundcloud.com.
 It should work with OS X, any Linux OS.
+
 
 System requirements
 --------------
@@ -24,13 +24,20 @@ Linux Easy Installation :
 ___
 * Download as ZIP ( check the button at the left of the page)
 * Unzip
+* Go into the folder `soundcloud-dl`
 * You can use the auto installer : `./install`
 
 MacOS :
 ___
 * Download as ZIP ( check the button at the left of the page)
 * Unzip
+* Go into the folder `soundcloud-dl`
 * Need tester for the auto Installer
+
+
+Usage
+___
+* Type `scdl [URL]`
 
 
 Features
