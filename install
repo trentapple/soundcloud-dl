@@ -4,15 +4,107 @@
 # Share it if you like ;)
 ##############################################################
 echo ''
-echo 'Soundcloud Downloader Installer'
+echo ' *---------------------------------------------------------------------------*'
+echo '|                             SCDL Installer                                  |'
+echo ' *---------------------------------------------------------------------------*'
 echo ''
-echo ''
-sudo apt-get update
-sudo apt-get install curl
-sudo apt-get install eyeD3
-sudo cp scdl /bin/scdl
-sudo chmod +x /bin/scdl
-echo ''
-echo ''
-echo 'Done!'
-echo 'Now, just type 'scdl [LINK]''
+
+function menu() {
+    clear
+    PS3='Please enter your choice: '
+    options=("Install" "Set the path where to download Music" "Set the behaviour when the script encounter a music that already exist" "Quit")
+    select opt in "${options[@]}"
+    do
+        if [ "$opt" = "Install" ]; then
+            install
+        elif [ "$opt" = "Set the path where to download Music" ]; then
+            setpath
+        elif [ "$opt" = "Set the behaviour when the script encounter a music that already exist" ]; then
+            setcon
+        elif [ "$opt" = "Quit" ]; then
+            quit
+        else
+            clear
+            echo 'Bad option'
+        fi
+    done
+}
+
+function install() {
+    sudo apt-get update
+    sudo apt-get install curl
+    sudo apt-get install eyeD3
+    sudo mkdir /opt/scdl
+    sudo cp scdl /opt/scdl/scdl
+    sudo chmod +x /opt/scdl/scdl
+    echo '#!/bin/sh
+export SCDL_HOME="/opt/scdl"
+$SCDL_HOME/scdl "$*"' > /tmp/scdl
+    sudo cp /tmp/scdl /usr/bin/
+    sudo chmod 775 /usr/bin/scdl
+
+    setpath
+    setcon
+    quit
+}
+
+function setpath() {
+    echo "Where do you want to download your Music?"
+    read -p 'path : ' path
+    if [ -d $path ]; then
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /tmp/scdl.conf
+        sudo mv /tmp/scdl.conf /opt/scdl/scdl.conf
+        echo 'Path set !'
+        echo ''
+    else
+        echo 'The path do not exist'
+        echo ''
+        setpath
+    fi
+}
+
+function setcon() {
+    read -p "Would you like to stop the script when it encounter a music that already exist ?(y/n)" choice
+    if [ "$choice" = "y" ]; then
+        cont="false"
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /tmp/scdl.conf
+        sudo mv /tmp/scdl.conf /opt/scdl/scdl.conf
+        echo 'The script will exit if it encounter a file that already exist'
+        echo ''
+    elif [ "$choice" = "n" ]; then
+        cont="true"
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /tmp/scdl.conf
+        sudo mv /tmp/scdl.conf /opt/scdl/scdl.conf
+        echo 'The script will skip the music that already exist'
+        echo ''
+    else
+        echo 'Bad option'
+        setcon
+    fi
+}
+
+function quit() {
+    read -p 'Do you realy want to exit this script ?(y/n)' quit
+    if [ "$quit" = "y" ]; then
+        echo 'Bye !'
+        exit
+    elif [ "$quit" = "n" ]; then
+        echo ''
+        menu
+    else
+        echo 'Bad option'
+        quit
+    fi
+}
+
+if [ -f /opt/scdl/scdl.conf ]; then
+    source /opt/scdl/scdl.conf
+    path=$pathtomusic
+    cont=$continue
+    menu
+else
+    echo 'No Config file detected... I will install scdl for you.'
+    echo ''
+    install
+fi
+

@@ -9,6 +9,24 @@ echo ' *------------------------------------------------------------------------
 echo '|      SoundcloudMusicDownloader(cURL/Wget version) |   FlyinGrub rework      |'
 echo ' *---------------------------------------------------------------------------*'
 
+function config() {
+    if [ -f /opt/scdl/scdl.conf ]; then
+        source /opt/scdl/scdl.conf
+        if [ "$continue" = "true" ]; then
+            cont=continue
+        else
+            cont=exit
+        fi
+        cd $pathtomusic
+        echo "[i] Path where i will download music : $pathtomusic" 
+        echo "[i] I will $cont if i found a file that already exist"
+    else
+        echo '[i] The config file do not exist...'
+        echo '[i] Please run the Installer First'
+        exit
+    fi
+}
+
 function settags() {
     artist=$1
     title=$2
@@ -39,7 +57,7 @@ function downsong() { #Done!
     else
         page=$(wget --max-redirect=1000 --trust-server-names --progress=bar -U -O- 'Mozilla/5.0' "$url")
     fi
-    id=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9]*" | sort | uniq)
+    id=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9].*" | sort | uniq)
     title=$(echo -e "$page" | grep -A1 "<em itemprop=\"name\">" | tail -n1 | sed 's/\\u0026/\&/g' | recode html..u8)
     filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )
     songurl=$(curl -s -L --user-agent 'Mozilla/5.0' "https://api.sndcdn.com/i1/tracks/$id/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
@@ -49,7 +67,7 @@ function downsong() { #Done!
     # DL
     echo ""
     if [ -e "$filename" ]; then
-        echo "[!] The song $filename has already been downloaded..."  && exit
+        echo "[!] The song $filename has already been downloaded..."  && $cont
     else
         echo "[-] Downloading $title..."
     fi
@@ -127,7 +145,7 @@ function downallsongs() {
             title=$(echo -e "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</title" | cut -d "<" -f 1 | recode html..u8)
             filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )
             if [ -e "$filename" ]; then
-                echo "[!] The song $filename has already been downloaded..."  && exit
+                echo "[!] The song $filename has already been downloaded..."  && $cont
             fi
             artist=$(echo "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</username" | cut -d "<" -f 1 | recode html..u8)
             genre=$(echo "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</genre" | cut -d "<" -f 1 | recode html..u8)
@@ -209,7 +227,7 @@ function downset() {
         artist=$(echo "$page" | grep -A3 $id | grep byArtist | cut -d"\"" -f2 | recode html..u8)
         filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )      
         if [ -e "$filename" ]; then
-            echo "[!] The song $filename has already been downloaded..."  && exit
+            echo "[!] The song $filename has already been downloaded..."  && $cont
         else
             echo "[-] Downloading $title..."
         fi
@@ -314,7 +332,7 @@ command -v eyeD3 &>/dev/null || { echo "[!] eyeD3 needs to be installed to write
 soundurl=$(echo "$1" | sed 's-.*soundcloud.com/-http://soundcloud.com/-' | cut -d "?" -f 1 | grep 'soundcloud.com')
 
 echo "[i] Using URL $soundurl"
-
+config
 if [[ "$(echo "$soundurl" | cut -d "/" -f 4)" == "" ]] ; then
     echo "[!] Bad URL!"
     show_help 
