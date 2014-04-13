@@ -42,10 +42,6 @@ export SCDL_HOME="/opt/scdl"
 $SCDL_HOME/scdl "$*"' > /tmp/scdl
     sudo cp /tmp/scdl /usr/bin/
     sudo chmod 775 /usr/bin/scdl
-
-    setpath
-    setcon
-    quit
 }
 
 function setpath() {
@@ -106,5 +102,8 @@ else
     echo 'No Config file detected... I will install scdl for you.'
     echo ''
     install
+    setpath
+    setcon
+    quit
 fi
 
