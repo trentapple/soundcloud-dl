@@ -42,6 +42,7 @@ export SCDL_HOME="/opt/scdl"
 $SCDL_HOME/scdl "$*"' > /tmp/scdl
     sudo cp /tmp/scdl /usr/bin/
     sudo chmod 775 /usr/bin/scdl
+    menu
 }
 
 function setpath() {
@@ -80,7 +81,7 @@ function setcon() {
 }
 
 function quit() {
-    read -p 'Do you realy want to exit this script ?(y/n)' quit
+    read -p 'Do you really want to leave the installer ?(y/n)' quit
     if [ "$quit" = "y" ]; then
         echo 'Bye !'
         exit
@@ -104,6 +105,6 @@ else
     install
     setpath
     setcon
-    quit
+    exit
 fi
 
