@@ -4,7 +4,7 @@ Souncloud music downloader
 Description
 --------------
 This shell script is able to download music from http://www.soundcloud.com.
-It should work with iOS, OS X, Linux.
+It should work with OS X, any Linux OS.
 
 System requirements
 --------------
@@ -15,26 +15,27 @@ System requirements
 
 Required tools
 --------------
-Linux Easy Installation :
-___
-* You can use the auto installer : `./install`
-
-MacOS :
-___
 * You will need `eyeD3` and `curl` 
 
 
 Instructions
 --------------
-* Clic "Donwload as zip" (at the right)
+Linux Easy Installation :
+___
+* Download as ZIP ( check the button at the left of the page)
 * Unzip
-* Place scdl.sh where you want to download the music or add a `cd /placewhereyouwanttodownloadmusic` at the begining of the script
-* Apply executable permissions `chmod +x scdl.sh`
-* Usage: `./scdl [URL]` or `scdl [URL]` if you have installed it with the installer
+* You can use the auto installer : `./install`
+
+MacOS :
+___
+* Download as ZIP ( check the button at the left of the page)
+* Unzip
+* Need tester for the auto Installer
 
 
 Features
 --------------
+* Easy Installer
 * Autodetect wich kind of download it is.
 * Download all song of an user's page
 * Download all song of asong page
@@ -45,20 +46,6 @@ Features
 * Set tags with eyeD3 (skip the tag if eyeD3 is not installed)
 * The script stop when he see one song that have already been downloaded
 * You can use it as a sync script as i do with my Raspberry PI, each night it launch the script with my users profile and if new song as been added it download them and stop when it encounter a song that is already downloaded ;).
-
-
-Changelog
---------------
-18/01/2014 :
-* Replaced id3v2 with eyeD3 wich support image tag
-* Added image & genre tags support for each type 
-* Added support of playlist in an users page !
-
-don't know the date... :
-* Group page support.
-
-18/03/2014 :
-* User's like download support.
 
 
 More information
