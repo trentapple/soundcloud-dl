@@ -31,26 +31,23 @@ function menu() {
 }
 
 function install() {
-    sudo apt-get update
-    sudo apt-get install curl
-    sudo apt-get install eyeD3
-    sudo mkdir /opt/scdl
-    sudo cp scdl /opt/scdl/scdl
-    sudo chmod +x /opt/scdl/scdl
-    echo '#!/bin/sh
-export SCDL_HOME="/opt/scdl"
-$SCDL_HOME/scdl "$*"' > /tmp/scdl
-    sudo cp /tmp/scdl /usr/bin/
-    sudo chmod 775 /usr/bin/scdl
-    menu
+    detectedOS
+    if [[ "$platform" == 'Linux' ]]; then
+        sudo apt-get update
+        sudo apt-get install curl
+        sudo apt-get install eyeD3
+        cp scdl /usr/bin/scdl
+        menu
+    elif [[ "$platform" == 'Darwin' ]]; then
+        cp scdl /opt/local/bin/scdl
+    fi
 }
 
 function setpath() {
     echo "Where do you want to download your Music?"
     read -p 'path : ' path
     if [ -d $path ]; then
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /tmp/scdl.conf
-        sudo mv /tmp/scdl.conf /opt/scdl/scdl.conf
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
         echo 'Path set !'
         echo ''
     else
@@ -64,14 +61,12 @@ function setcon() {
     read -p "Would you like to stop the script when it encounter a music that already exist ?(y/n)" choice
     if [ "$choice" = "y" ]; then
         cont="false"
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /tmp/scdl.conf
-        sudo mv /tmp/scdl.conf /opt/scdl/scdl.conf
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
         echo 'The script will exit if it encounter a file that already exist'
         echo ''
     elif [ "$choice" = "n" ]; then
         cont="true"
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /tmp/scdl.conf
-        sudo mv /tmp/scdl.conf /opt/scdl/scdl.conf
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
         echo 'The script will skip the music that already exist'
         echo ''
     else
@@ -94,8 +89,17 @@ function quit() {
     fi
 }
 
-if [ -f /opt/scdl/scdl.conf ]; then
-    source /opt/scdl/scdl.conf
+function detectedOS(){
+    unamestr=`uname`
+    if [[ "$unamestr" == 'Linux' ]]; then
+       platform='linux'
+    elif [[ "$unamestr" == 'Darwin' ]]; then
+       platform='Darwin'
+    fi
+}
+
+if [ -f /$HOME/.scdl.cfg ]; then
+    source /$HOME/.scdl.cfg
     path=$pathtomusic
     cont=$continue
     menu

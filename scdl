@@ -10,8 +10,8 @@ echo '|      SoundcloudMusicDownloader(cURL/Wget version) |   FlyinGrub rework  
 echo ' *---------------------------------------------------------------------------*'
 
 function config() {
-    if [ -f /opt/scdl/scdl.conf ]; then
-        source /opt/scdl/scdl.conf
+    if [ -f /$HOME/.scdl.cfg ]; then
+        source /$HOME/.scdl.cfg
         if [ "$continue" = "true" ]; then
             cont=continue
         else
@@ -22,7 +22,7 @@ function config() {
         echo "[i] I will $cont if i found a file that already exist"
     else
         echo '[i] The config file do not exist...'
-        echo '[i] Please run the Installer First'
+        echo '[i] Please run the Installer First or add The sample config file'
         exit
     fi
 }
