@@ -20,10 +20,17 @@ Required tools
 
 Instructions
 --------------
+Linux Easy Installation :
+___
 * Download as ZIP ( check the button at the left of the page)
 * Unzip
-* You can use the auto installer : `./install` (Support Debian/arch/MacOS X)
-* Type `scdl {URL}`
+* You can use the auto installer : `./install`
+
+MacOS :
+___
+* Download as ZIP ( check the button at the left of the page)
+* Unzip
+* Need tester for the auto Installer
 
 
 Features
