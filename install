@@ -54,9 +54,16 @@ function setpath() {
         echo 'Path set !'
         echo ''
     else
-        echo 'The path do not exist'
-        echo ''
-        setpath
+        echo 'The path do not exist...'
+        read -p 'Would you like to Create it? (y/n)?' choice
+        if [ "$choice" = "y" ]; then
+            mkdir $path
+            echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
+            echo 'Path set !'
+            echo ''
+        else
+            setpath
+        fi
     fi
 }
 
