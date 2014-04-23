@@ -37,6 +37,9 @@ function install() {
         sudo apt-get install curl
         sudo apt-get install eyeD3
         sudo cp scdl /usr/bin/scdl
+    elif [[ "$platform" == 'redhat' ]]; then
+        sudo yum install curl python-eyed3 recode
+        sudo cp scdl /usr/bin/scdl
     elif [[ "$platform" == 'arch' ]]; then
         sudo pacman -S curl python2-eyed3
         sudo cp scdl /usr/bin/scdl
@@ -102,8 +105,11 @@ function quit() {
 function detectedOS(){
     unamestr=`uname`
         if [[ "$unamestr" == 'Linux' ]]; then
-        platform='linux'
-
+            if [[ -f /etc/redhat-release ]]; then
+                platform='redhat'
+            else
+                platform='linux'
+            fi
         if [[ -f /etc/arch-release ]]; then
             platform='arch'
         fi
