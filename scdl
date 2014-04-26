@@ -151,7 +151,7 @@ function downallsongs() {
             # DL
             echo "[-] Downloading the song $title..."
             if $curlinstalled; then
-               songurl=$(curl -s -L --user-agent 'Mozilla/5.0' "https://api.sndcdn.com/i1/tracks/$songID/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
+                songurl=$(curl -s -L --user-agent 'Mozilla/5.0' "https://api.sndcdn.com/i1/tracks/$songID/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
             else
                 songurl=$(wget -q --max-redirect=1000 --trust-server-names -O- -U 'Mozilla/5.0' "https://api.sndcdn.com/i1/tracks/$songID/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
             fi
@@ -312,12 +312,12 @@ curlinstalled=`command -V curl &>/dev/null`
 wgetinstalled=`command -V wget &>/dev/null`
 
 if $curlinstalled; then
-  echo "[i] Using" `curl -V` | cut -c-21
+    echo "[i] Using" `curl -V` | cut -c-21
 elif $wgetinstalled; then
-  echo "[i] Using" `wget -V` | cut -c-24
-  echo "[i] cURL is preferred" 
+    echo "[i] Using" `wget -V` | cut -c-24
+    echo "[i] cURL is preferred"
 else
-  echo "[!] cURL or Wget need to be installed."; exit 1;
+    echo "[!] cURL or Wget need to be installed."; exit 1;
 fi
 
 command -v recode &>/dev/null || { echo "[!] Recode needs to be installed."; exit 1; }

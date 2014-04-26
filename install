@@ -100,18 +100,18 @@ function quit() {
 
 function detectedOS(){
     unamestr=`uname`
-        if [[ "$unamestr" == 'Linux' ]]; then
-            if [[ -f /etc/redhat-release ]]; then
-                platform='redhat'
-            else
-                platform='linux'
-            fi
+    if [[ "$unamestr" == 'Linux' ]]; then
+        if [[ -f /etc/redhat-release ]]; then
+            platform='redhat'
+        else
+            platform='linux'
+        fi
         if [[ -f /etc/arch-release ]]; then
             platform='arch'
         fi
 
     elif [[ "$unamestr" == 'Darwin' ]]; then
-       platform='darwin'
+        platform='darwin'
     fi
 }
 
