@@ -33,9 +33,7 @@ function menu() {
 function install() {
     detectedOS
     if [[ "$platform" == 'linux' ]]; then
-        sudo apt-get update
-        sudo apt-get install curl
-        sudo apt-get install eyeD3
+        sudo apt-get update && sudo apt-get install curl eyeD3
         sudo cp scdl /usr/bin/scdl
     elif [[ "$platform" == 'redhat' ]]; then
         sudo yum install curl python-eyed3 recode
