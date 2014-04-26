@@ -32,18 +32,15 @@ function menu() {
 
 function install() {
     detectedOS
-    if [[ "$platform" == 'linux' ]]; then
-        sudo apt-get update && sudo apt-get install curl eyeD3
-        sudo cp scdl /usr/bin/scdl
-    elif [[ "$platform" == 'redhat' ]]; then
-        sudo yum install curl python-eyed3 recode
-        sudo cp scdl /usr/bin/scdl
-    elif [[ "$platform" == 'arch' ]]; then
-        sudo pacman -S curl python2-eyed3
-        sudo cp scdl /usr/bin/scdl
-    elif [[ "$platform" == 'darwin' ]]; then
-        sudo cp scdl /opt/local/bin/scdl
-    fi
+
+    [[ "$platform" == 'linux'  ]] && sudo apt-get update && sudo apt-get install curl eyeD3
+    [[ "$platform" == 'redhat' ]] && sudo yum install curl python-eyed3 recode
+    [[ "$platform" == 'arch'   ]] && sudo pacman -S curl python2-eyed3
+
+    local dest=/usr/bin/scdl
+    [[ "$platform" == 'darwin' ]] && dest=/opt/local/bin/scdl
+    sudo cp scdl "$dest"
+
     menu
 }
 
