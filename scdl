@@ -77,8 +77,7 @@ function downsong() { #Done!
         wget --max-redirect=1000 --trust-server-names -U 'Mozilla/5.0' -O "`echo -e "$filename"`" "$songurl";
     fi
     settags "$artist" "$title" "$filename" "$genre" "$imageurl"
-    echo "[i] Downloading of $filename finished"
-    echo ''
+    echo -e "[i] Downloading of $filename finished\n"
 }
 
 function downlike() {
@@ -101,8 +100,7 @@ function downlike() {
     echo "[i] Found $songcount songs! (50 is max)"
     for (( i=1; i <= $songcount; i++ ))
     do
-        echo ''
-        echo "---------- Downloading Song n°$i ----------"
+        echo -e "\n---------- Downloading Song n°$i ----------"
         thisongurl=$(echo "$likepage" | sed -n "$i"p | cut -d ">" -f 2 | cut -d "<" -f 1)
         downsong "$thisongurl"
         echo "----- Downloading Song n°$i finished ------"
@@ -139,8 +137,7 @@ function downallsongs() {
             playlisturl=$(echo -e "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</permalink-url" | cut -d "<" -f 1 | head -n 1 | recode html..UTF-16)
             echo "[i] *--------Donwloading a set----------*"
             downset $playlisturl
-            echo "[i] *-------- Set Downloaded -----------*"
-            echo ''
+            echo -e "[i] *-------- Set Downloaded -----------*\n"
         else
             title=$(echo -e "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</title" | cut -d "<" -f 1 | recode html..UTF-16)
             filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )
@@ -164,8 +161,7 @@ function downallsongs() {
                 wget --max-redirect=1000 --trust-server-names -U 'Mozilla/5.0' -O "`echo -e "$filename"`" "$songurl";
             fi
             settags "$artist" "$title" "$filename" "$genre" "$imageurl"
-            echo "[i] Downloading of $filename finished"
-            echo ''
+            echo -e "[i] Downloading of $filename finished\n"
         fi
     done
 }
@@ -190,8 +186,7 @@ function downgroup() {
     echo "[i] Found $songcount songs!"
     for (( i=1; i <= $songcount; i++ ))
     do
-        echo ''
-        echo "---------- Downloading Song n°$i ----------"
+        echo -e "\n---------- Downloading Song n°$i ----------"
         thisongurl=$(echo "$trackspage" | sed -n "$i"p | cut -d '"' -f 4)
         downsong "$thisongurl"
         echo "----- Downloading Song n°$i finished ------"
@@ -254,8 +249,7 @@ function downset() {
             wget --max-redirect=1000 --trust-server-names -U 'Mozilla/5.0' -O "`echo -e "$filename"`" "$songurl";
         fi
         settags "$artist" "$title" "$filename" "$genre" "$imageurl" "$album"
-        echo "[i] Downloading of $filename finished"
-        echo ''
+        echo -e "[i] Downloading of $filename finished\n"
     done
 }
 

@@ -54,16 +54,14 @@ function setpath() {
     read -p 'path : ' path
     if [ -d $path ]; then
         echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
-        echo 'Path set !'
-        echo ''
+        echo -e 'Path set !\n'
     else
         echo 'The path do not exist...'
         read -p 'Would you like to Create it? (y/n)?' choice
         if [ "$choice" = "y" ]; then
             mkdir $path
             echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
-            echo 'Path set !'
-            echo ''
+            echo -e 'Path set !\n'
         else
             setpath
         fi
@@ -75,13 +73,11 @@ function setcon() {
     if [ "$choice" = "y" ]; then
         cont="false"
         echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
-        echo 'The script will exit if it encounter a file that already exist'
-        echo ''
+        echo -e 'The script will exit if it encounter a file that already exist\n'
     elif [ "$choice" = "n" ]; then
         cont="true"
         echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
-        echo 'The script will skip the music that already exist'
-        echo ''
+        echo -e 'The script will skip the music that already exist\n'
     else
         echo 'Bad option'
         setcon
@@ -125,8 +121,7 @@ if [ -f /$HOME/.scdl.cfg ]; then
     cont=$continue
     menu
 else
-    echo 'No Config file detected... I will install scdl for you.'
-    echo ''
+    echo -e 'No Config file detected... I will install scdl for you.\n'
     install
     setpath
     setcon
