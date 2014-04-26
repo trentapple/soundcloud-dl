@@ -18,7 +18,7 @@ function config() {
             cont=exit
         fi
         cd $pathtomusic
-        echo "[i] Path where i will download music : $pathtomusic" 
+        echo "[i] Path where i will download music : $pathtomusic"
         echo "[i] I will $cont if i found a file that already exist"
     else
         echo '[i] The config file do not exist...'
@@ -117,11 +117,11 @@ function downallsongs() {
         page=$(wget --max-redirect=1000 --trust-server-names -q -U 'Mozilla/5.0' $url)
     fi
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    artistID=$(echo "$page" | tr "," "\n" | grep "trackOwnerId" | head -n 1 | cut -d ":" -f 2) 
+    artistID=$(echo "$page" | tr "," "\n" | grep "trackOwnerId" | head -n 1 | cut -d ":" -f 2)
     echo "[i] Grabbing all song info"
     if $curlinstalled; then
         songs=$(curl -s -L --user-agent 'Mozilla/5.0' "https://api.sndcdn.com/e1/users/$artistID/sounds?limit=256&offset=0&linked_partitioning=1&client_id=$clientID" | tr -d "\n" | sed 's/<\/stream-item>/\n/g')
-    else 
+    else
         songs=$(wget -q --max-redirect=1000 --trust-server-names -O- -U 'Mozilla/5.0' "https://api.sndcdn.com/e1/users/$artistID/sounds?limit=256&offset=0&linked_partitioning=1&client_id=$clientID" | tr -d "\n" | sed 's/<\/stream-item>/\n/g')
     fi
     songcount=$(echo "$songs" | wc -l)
@@ -133,7 +133,7 @@ function downallsongs() {
     for (( i=1; i <= $songcount; i++ ))
     do
         playlist=$(echo -e "$songs"| sed -n "$i"p | tr ">" "\n" | grep "</kind" | cut -d "<" -f 1 | grep playlist)
-        if [ "$playlist" = "playlist" ] ; then 
+        if [ "$playlist" = "playlist" ] ; then
             playlisturl=$(echo -e "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</permalink-url" | cut -d "<" -f 1 | head -n 1 | recode html..UTF-16)
             echo "[i] *--------Donwloading a set----------*"
             downset $playlisturl
@@ -202,8 +202,8 @@ function downset() {
     else
         page=$(wget --max-redirect=1000 --trust-server-names --progress=bar -U -O- 'Mozilla/5.0' "$url")
     fi
-    settitle=$(echo -e "$page" | grep -A1 "<em itemprop=\"name\">" | tail -n1) 
-    setsongs=$(echo "$page" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9]*" | sort | uniq) 
+    settitle=$(echo -e "$page" | grep -A1 "<em itemprop=\"name\">" | tail -n1)
+    setsongs=$(echo "$page" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9]*" | sort | uniq)
     echo "[i] Found set "$settitle""
     if [ -z "$setsongs" ]; then
         echo "[!] No songs found"
@@ -220,7 +220,7 @@ function downset() {
             title=$(echo -e "$page" | grep $id | grep id | grep -oE "\"title\":\"[^\"]*" | sed 's/"title":"//' | sed 's/\\u0026/\&/g' | recode html..UTF-16)
         fi
         artist=$(echo "$page" | grep -A3 $id | grep byArtist | cut -d"\"" -f2 | recode html..UTF-16)
-        filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )      
+        filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )
         if [ -e "$filename" ]; then
             echo "[!] The song $filename has already been downloaded..."  && $cont
         else
@@ -329,7 +329,7 @@ echo "[i] Using URL $soundurl"
 config
 if [[ "$(echo "$soundurl" | cut -d "/" -f 4)" == "" ]] ; then
     echo "[!] Bad URL!"
-    show_help 
+    show_help
     exit 1
 elif [[ "$(echo "$soundurl" | cut -d "/" -f 4)" == "groups" ]] ; then
     echo "[i] Detected download type : All song of the group"
