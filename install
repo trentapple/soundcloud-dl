@@ -12,21 +12,22 @@ echo ''
 function menu() {
     clear
     PS3='Please enter your choice: '
-    options=("Install" "Set the path where to download Music" "Set the behaviour when the script encounter a music that already exist" "Quit")
+    local options=("Install" "Set the path where to download Music" "Set the behaviour when the script encounter a music that already exist" "Quit")
     select opt in "${options[@]}"
     do
-        if [ "$opt" = "Install" ]; then
-            install
-        elif [ "$opt" = "Set the path where to download Music" ]; then
-            setpath
-        elif [ "$opt" = "Set the behaviour when the script encounter a music that already exist" ]; then
-            setcon
-        elif [ "$opt" = "Quit" ]; then
-            quit
-        else
-            clear
-            echo 'Bad option'
-        fi
+        case "$opt" in
+            "Install")
+                install ;;
+            "Set the path where to download Music")
+                setpath ;;
+            "Set the behaviour when the script encounter a music that already exist")
+                setcon ;;
+            "Quit")
+                quit ;;
+            *)
+                clear && echo "Bad option"
+                ;;
+        esac
     done
 }
 
