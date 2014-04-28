@@ -81,34 +81,22 @@ function setcon() {
 }
 
 function quit() {
-    read -p 'Do you really want to leave the installer ?(y/n)' quit
-    if [ "$quit" = "y" ]; then
-        echo 'Bye !'
-        exit
-    elif [ "$quit" = "n" ]; then
-        echo ''
-        menu
-    else
-        echo 'Bad option'
-        quit
-    fi
+    read -p 'Do you really want to leave the installer? (y/n) ' quit
+    case "$quit" in
+        "y")
+            echo 'Bye!' && exit ;;
+        "n")
+            echo '' && menu ;;
+        *)
+            echo 'Bad option' && quit ;;
+    esac
 }
 
 function detectedOS(){
-    unamestr=`uname`
-    if [[ "$unamestr" == 'Linux' ]]; then
-        if [[ -f /etc/redhat-release ]]; then
-            platform='redhat'
-        else
-            platform='linux'
-        fi
-        if [[ -f /etc/arch-release ]]; then
-            platform='arch'
-        fi
-
-    elif [[ "$unamestr" == 'Darwin' ]]; then
-        platform='darwin'
-    fi
+    unamestr=$(uname)
+    platform=$(echo "$unamestr" | tr '[:upper:]' '[:lower:]')
+    [[ -f /etc/redhat-release  ]] && platform='redhat'
+    [[ -f /etc/arch-release    ]] && platform='arch'
 }
 
 if [ -f /$HOME/.scdl.cfg ]; then
