@@ -15,7 +15,8 @@ System requirements
 
 Required tools
 --------------
-* You will need `eyeD3` and `curl` 
+* You will need `eyeD3` ; `curl` ; `recode`
+* The installer install all the required tools.
 
 
 Instructions
