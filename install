@@ -41,8 +41,6 @@ function install() {
     local dest=/usr/bin/scdl
     [[ "$platform" == 'darwin' ]] && dest=/opt/local/bin/scdl
     sudo cp scdl "$dest"
-
-    menu
 }
 
 function setpath() {
