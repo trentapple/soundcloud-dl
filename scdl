@@ -76,7 +76,6 @@ function downlike() {
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     artistID=$(curl -s --user-agent 'Mozilla/5.0' "http://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
     likepage=$(curl -L -s --user-agent 'Mozilla/5.0' "http://api.soundcloud.com/users/$artistID/favorites?client_id=$clientID" | sed '1,2d' | grep "<permalink-url>" | sed '1d' | sed -n '1~2p')
-    echo $likepage >> test2.txt
     songcount=$(echo "$likepage" | wc -l)
     echo "[i] Found $songcount songs! (50 is max)"
     for (( i=1; i <= $songcount; i++ ))
