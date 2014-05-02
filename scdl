@@ -9,6 +9,10 @@ echo ' *------------------------------------------------------------------------
 echo '|               SoundcloudMusicDownloader           |   FlyinGrub rework      |'
 echo ' *---------------------------------------------------------------------------*'
 
+function CURL(){
+    curl -s -L --user-agent 'Mozilla/5.0' "$1"
+}
+
 function config() {
     if [ -f /$HOME/.scdl.cfg ]; then
         source /$HOME/.scdl.cfg
@@ -48,11 +52,11 @@ function downsong() { #Done!
     # Grab Info
     url="$1"
     echo "[i] Grabbing song page"
-    page=$(curl -s -L --user-agent 'Mozilla/5.0' "$url")
+    page=$(CURL "$url")
     id=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9].*" | sort | uniq)
     title=$(echo -e "$page" | grep -A1 "<em itemprop=\"name\">" | tail -n1 | sed 's/\\u0026/\&/g' | recode html..UTF-16)
     filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )
-    songurl=$(curl -s -L --user-agent 'Mozilla/5.0' "https://api.sndcdn.com/i1/tracks/$id/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
+    songurl=$(CURL "https://api.sndcdn.com/i1/tracks/$id/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
     artist=$(echo "$page" | grep byArtist | sed 's/.*itemprop="name">\([^<]*\)<.*/\1/g' | recode html..UTF-16)
     imageurl=$(echo "$page" | tr ">" "\n" | grep -A1 '<div class="artwork-download-link"' | cut -d '"' -f 2 | tr " " "\n" | grep 'http' | sed 's/original/t500x500/g' | sed 's/png/jpg/g' )
     genre=$(echo "$page" | tr ">" "\n" | grep -A1 '<span class="genre search-deprecation-notification" data="/tags/' | tr ' ' "\n" | grep '</span' | cut -d "<" -f 1 | recode html..UTF-16)
@@ -72,10 +76,10 @@ function downlike() {
     artistnm=$(echo "$1" | cut -d '/' -f 4)
     likeurl=$(echo "http://soundcloud.com/$artistnm")
     echo "[i] Grabbing artists page"
-    page=$(curl -L -s --user-agent 'Mozilla/5.0' $likeurl)
+    page=$(CURL $likeurl)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    artistID=$(curl -s --user-agent 'Mozilla/5.0' "http://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
-    likepage=$(curl -L -s --user-agent 'Mozilla/5.0' "http://api.soundcloud.com/users/$artistID/favorites?client_id=$clientID" | sed '1,2d' | grep "<permalink-url>" | sed '1d' | sed -n '1~2p')
+    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
+    likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites?client_id=$clientID" | sed '1,2d' | grep "<permalink-url>" | sed '1d' | sed -n '1~2p')
     songcount=$(echo "$likepage" | wc -l)
     echo "[i] Found $songcount songs! (50 is max)"
     for (( i=1; i <= $songcount; i++ ))
@@ -91,11 +95,11 @@ function downallsongs() {
     # Grab Info
     url="$1"
     echo "[i] Grabbing artists page"
-    page=$(curl -L -s --user-agent 'Mozilla/5.0' $url)
+    page=$(CURL $url)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    artistID=$(curl -s --user-agent 'Mozilla/5.0' "http://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
+    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
     echo "[i] Grabbing all song info"
-    songs=$(curl -s -L --user-agent 'Mozilla/5.0' "https://api.sndcdn.com/e1/users/$artistID/sounds?limit=256&offset=0&linked_partitioning=1&client_id=$clientID" | tr -d "\n" | sed 's/<\/stream-item>/\n/g' | sed '$d')
+    songs=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds?limit=256&offset=0&linked_partitioning=1&client_id=$clientID" | tr -d "\n" | sed 's/<\/stream-item>/\n/g' | sed '$d')
     songcount=$(echo "$songs" | wc -l)
     echo "[i] Found $songcount songs! (200 is max)"
     if [ -z "$songs" ]; then
@@ -122,7 +126,7 @@ function downallsongs() {
             songID=$(echo "$songs" | sed -n "$i"p | tr " " "\n" | grep "</id>" | head -n 1 | cut -d ">" -f 2 | cut -d "<" -f 1)
             # DL
             echo "[-] Downloading the song $title..."
-            songurl=$(curl -s -L --user-agent 'Mozilla/5.0' "https://api.sndcdn.com/i1/tracks/$songID/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
+            songurl=$(CURL "https://api.sndcdn.com/i1/tracks/$songID/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
             curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$songurl";
             settags "$artist" "$title" "$filename" "$genre" "$imageurl"
             echo -e "[i] Downloading of $filename finished\n"
@@ -133,10 +137,10 @@ function downallsongs() {
 function downgroup() {
     groupurl="$1"
     echo "[i] Grabbing group page"
-    groupage=$(curl -L -s --user-agent 'Mozilla/5.0' "$groupurl")
+    groupage=$(CURL "$groupurl")
     groupid=$(echo "$groupage" | grep "html5-code-groups" | tr " " "\n" | grep "html5-code-groups-" | cut -d '"' -f 2 | sed '2d' | cut -d '-' -f 4)
     clientID=$(echo "$groupage" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    trackspage=$(curl -L -s --user-agent 'Mozilla/5.0' "http://api.soundcloud.com/groups/$groupid/tracks.json?client_id=$clientID" | tr "}" "\n")
+    trackspage=$(CURL "http://api.soundcloud.com/groups/$groupid/tracks.json?client_id=$clientID" | tr "}" "\n")
     trackspage=$(echo "$trackspage" | tr "," "\n" | grep '"permalink_url":' | sed '1d' | sed -n '1~2p')
     songcount=$(echo "$trackspage" | wc -l)
     echo "[i] Found $songcount songs!"
@@ -153,7 +157,7 @@ function downset() {
     # Grab Info
     echo "[i] Grabbing set page"
     url="$1"
-    page=$(curl -L -s --user-agent 'Mozilla/5.0' $url)
+    page=$(CURL $url)
     settitle=$(echo -e "$page" | grep -A1 "<em itemprop=\"name\">" | tail -n1)
     setsongs=$(echo "$page" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9]*" | sort | uniq)
     echo "[i] Found set "$settitle""
@@ -180,13 +184,13 @@ function downset() {
         fi
         #----------settags-------#
         pageurl=$(echo "$page" | grep -A3 $id | grep url | cut -d"\"" -f2)
-        songpage=$(curl -s -L --user-agent 'Mozilla/5.0' "$pageurl")
+        songpage=$(CURL "$pageurl")
         imageurl=$(echo "$songpage" | tr ">" "\n" | grep -A1 '<div class="artwork-download-link"' | cut -d '"' -f 2 | tr " " "\n" | grep 'http' | sed 's/original/t500x500/g' | sed 's/png/jpg/g' )
         genre=$(echo "$songpage" | tr ">" "\n" | grep -A1 '<span class="genre search-deprecation-notification" data="/tags/' | tr ' ' "\n" | grep '</span' | cut -d "<" -f 1 | recode html..UTF-16)
         album=$(echo "$page" | sed s/'<meta content='/\n/g | grep 'property="og:title"' | cut -d '=' -f 4 | cut -d '"' -f 4 | recode html..UTF-16)
         #------------------------#
         # DL
-        songurl=$(curl -s -L --user-agent 'Mozilla/5.0' "https://api.sndcdn.com/i1/tracks/$id/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
+        songurl=$(CURL "https://api.sndcdn.com/i1/tracks/$id/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
         curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$songurl";
         settags "$artist" "$title" "$filename" "$genre" "$imageurl" "$album"
         echo -e "[i] Downloading of $filename finished\n"
@@ -196,13 +200,13 @@ function downset() {
 function downallsets() {
     allsetsurl="$1"
     echo "[i] Grabbing user sets page"
-    allsetspage=$(curl -L -s --user-agent 'Mozilla/5.0' "$allsetsurl")
+    allsetspage=$(CURL "$allsetsurl")
     allsetsnumpages=$(echo "$allsetspage" | grep '<li class="set">' | wc -l)
     echo "[i] $allsetsnumpages sets pages found"
     for (( allsetsnumcurpage=1; allsetsnumcurpage <= $allsetsnumpages; allsetsnumcurpage++ ))
     do
         echo "   [i] Grabbing user sets page $allsetsnumcurpage"
-        allsetspage=$(curl -L --user-agent 'Mozilla/5.0' "$allsetsurl?page=$allsetsnumcurpage")
+        allsetspage=$(CURL "$allsetsurl?page=$allsetsnumcurpage")
         allsetssets=$(echo "$allsetspage" | grep -A1 "li class=\"set\"" | grep "<h3>" | sed 's/.*href="\([^"]*\)">.*/\1/g')
         if [ -z "$allsetssets" ]; then
             echo "[!] No sets found on user sets page $allsetsnumcurpage"
