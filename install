@@ -34,7 +34,7 @@ function menu() {
 function install() {
     detectedOS
 
-    [[ "$platform" == 'linux'  ]] && sudo apt-get update && sudo apt-get install curl eyeD3 recode
+    [[ "$platform" == 'linux'  ]] && sudo apt-get update && sudo apt-get -y install curl eyeD3 recode
     [[ "$platform" == 'redhat' ]] && sudo yum install curl python-eyed3 recode
     [[ "$platform" == 'arch'   ]] && sudo pacman -S curl python2-eyed3 recode
 
