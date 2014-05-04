@@ -9,8 +9,7 @@ It should work with OS X, any Linux OS.
 System requirements
 --------------
 * Unix like OS with a proper shell
-* cURL (Highly recommended) or wget
-* Tools wich are preinstalled on linux (I don't know  for OS X) : `sed` ; `tail` ; `tr` ; `echo` ; `grep` ; `head` ; `cut` ; `sort` ; `uniq` .
+* Tools wich are preinstalled on linux (I don't know  for OS X) : `sed` ; `tail` ; `tr` ; `echo` ; `grep` ; `head` ; `cut` ; `sort` ; `uniq`.
 
 
 Required tools
