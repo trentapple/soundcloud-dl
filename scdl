@@ -41,7 +41,7 @@ function settags() {
     curl -s -L --user-agent 'Mozilla/5.0' "$imageurl" -o "/tmp/1.jpg"
     if [ "$writags" = "1" ] ; then
         eyeD3 --remove-all "$filename" &>/dev/null
-        eyeD3 --add-image="/tmp/1.jpg:ILLUSTRATION" --add-image="/tmp/1.jpg:MEDIA" --add-image="/tmp/1.jpg:ICON" --add-image="/tmp/1.jpg:FRONT_COVER" -a "$artist" -Y $(date +%Y) -G "$genre" -t "$title" -A "$album" -2 --force-update "$filename" &>/dev/null
+        eyeD3 --add-image="/tmp/1.jpg:ILLUSTRATION" --add-image="/tmp/1.jpg:OTHER" --add-image="/tmp/1.jpg:MEDIA" --add-image="/tmp/1.jpg:ICON" --add-image="/tmp/1.jpg:MEDIA" --add-image="/tmp/1.jpg:OTHER_ICON" --add-image="/tmp/1.jpg:FRONT_COVER" -a "$artist" -Y $(date +%Y) -G "$genre" -t "$title" -A "$album" -2 "$filename"
         echo '[i] Setting tags finished!'
     else
         echo "[i] Setting tags skipped (please install eyeD3)"
