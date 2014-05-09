@@ -24,6 +24,7 @@ Instructions
 * Unzip
 * You can use the auto installer : `./install` (Support Debian/arch/MacOS X)
 * Type `scdl {URL}`
+* For help type `scdl -h` or `scdl -help` or `scdl`
 
 
 Features
