@@ -10,7 +10,7 @@ echo '|               SoundcloudMusicDownloader           |   FlyinGrub rework  
 echo ' *---------------------------------------------------------------------------*'
 
 function CURL(){
-    curl -s -L --user-agent 'Mozilla/5.0' "$1"
+    curl -s --user-agent 'Mozilla/5.0' "$1"
 }
 
 function config() {
@@ -205,7 +205,7 @@ function downallsets() {
     echo "[i] $allsetsnumpages sets pages found"
     for (( allsetsnumcurpage=1; allsetsnumcurpage <= $allsetsnumpages; allsetsnumcurpage++ ))
     do
-        echo "   [i] Grabbing user sets page $allsetsnumcurpage"
+        echo "[i] Grabbing user sets page $allsetsnumcurpage"
         allsetspage=$(CURL "$allsetsurl?page=$allsetsnumcurpage")
         allsetssets=$(echo "$allsetspage" | grep -A1 "li class=\"set\"" | grep "<h3>" | sed 's/.*href="\([^"]*\)">.*/\1/g')
         if [ -z "$allsetssets" ]; then
