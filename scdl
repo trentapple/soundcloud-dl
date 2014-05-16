@@ -260,23 +260,28 @@ soundurl=$(echo "$1" | sed 's-.*soundcloud.com/-http://soundcloud.com/-' | cut -
 
 echo "[i] Using URL $soundurl"
 config
-if [[ "$(echo "$soundurl" | cut -d "/" -f 4)" == "" ]] ; then
+
+d1="$(echo "$soundurl" | cut -d "/" -f 4)"
+d2="$(echo "$soundurl" | cut -d "/" -f 5)"
+d3="$(echo "$soundurl" | cut -d "/" -f 6)"
+
+if [[ "$d1" == "" ]] ; then
     echo "[!] Bad URL!"
     show_help
     exit 1
-elif [[ "$(echo "$soundurl" | cut -d "/" -f 4)" == "groups" ]] ; then
+elif [[ "$d1" == "groups" ]] ; then
     echo "[i] Detected download type : All song of the group"
     downgroup "$soundurl"
-elif [[ "$(echo "$soundurl" | cut -d "/" -f 5)" == "likes" ]] ; then
+elif [[ "$d2" == "likes" ]] ; then
     echo "[i] Detected download type : All of one user's like"
     downlike "$soundurl"
-elif [[ "$(echo "$soundurl" | cut -d "/" -f 5)" == "" ]] ; then
+elif [[ "$d2" == "" ]] ; then
     echo "[i] Detected download type : All of one user's songs"
     downallsongs "$soundurl"
-elif [[ "$(echo "$soundurl" | cut -d "/" -f 5)" == "sets" ]] && [[ "$(echo "$soundurl" | cut -d "/" -f 6)" == "" ]] ; then
+elif [[ "$d2" == "sets" ]] && [[ "$d3" == "" ]] ; then
     echo "[i] Detected download type : All of one user's sets"
     downallsets "$soundurl"
-elif [[ "$(echo "$soundurl" | cut -d "/" -f 5)" == "sets" ]] ; then
+elif [[ "$d2" == "sets" ]] ; then
     echo "[i] Detected download type : One single set"
     downset "$soundurl"
 else
