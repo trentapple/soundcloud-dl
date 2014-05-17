@@ -29,6 +29,8 @@ function config() {
         echo '[i] Please run the Installer First or add The sample config file'
         exit
     fi
+
+    [ "$continue" = "true" ] && cont=":"
 }
 
 function settags() {
