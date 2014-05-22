@@ -46,6 +46,8 @@ More information
 --------------
 The script cannot handle letters like `û` cause to recode. But if i remove it, instead of `&` you will have `&amp;` (the html code of `&`) and as i think there is more `&` than `û` i prefer to let it...
 
+You can also check out this online tool: [http://soundcloud-dl.com/](http://soundcloud-dl.com/).
+
 
 License
 --------------
