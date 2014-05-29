@@ -70,7 +70,7 @@ function downsong() { #Done!
     then
       echo "[i] This file can be downloaded in original"
       songurl="https://soundcloud.com$download"
-      filename=$(curl -I -L "$songurl" | grep Content-Disposition | cut -d\" -f2)
+      filename=$(curl -s --user-agent 'Mozilla/5.0' -I -L "$songurl" | grep Content-Disposition | cut -d\" -f2)
     fi
     
     # DL
@@ -198,7 +198,7 @@ function downset() {
         then
           echo "[i] This file can be downloaded in original"
           songurl="https://soundcloud.com$download"
-          filename=$(curl -I -L "$songurl" | grep Content-Disposition | cut -d\" -f2)
+          filename=$(curl -s --user-agent 'Mozilla/5.0' -I -L "$songurl" | grep Content-Disposition | cut -d\" -f2)
         fi
         
         if [ -e "$filename" ]; then
