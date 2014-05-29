@@ -62,6 +62,17 @@ function downsong() { #Done!
     artist=$(echo "$page" | grep byArtist | sed 's/.*itemprop="name">\([^<]*\)<.*/\1/g' | recode html..UTF-16)
     imageurl=$(echo "$page" | tr ">" "\n" | grep -A1 '<div class="artwork-download-link"' | cut -d '"' -f 2 | tr " " "\n" | grep 'http' | sed 's/original/t500x500/g' | sed 's/png/jpg/g' )
     genre=$(echo "$page" | tr ">" "\n" | grep -A1 '<span class="genre search-deprecation-notification" data="/tags/' | tr ' ' "\n" | grep '</span' | cut -d "<" -f 1 | recode html..UTF-16)
+    
+        
+    # Check if Original is downloadable
+    download=$(echo "$page" | grep "download pl-button" | cut -d\" -f2)
+    if [ "$download" != "" ]
+    then
+      echo "[i] This file can be downloaded in original"
+      songurl="https://soundcloud.com$download"
+      filename=$(curl -I -L "$songurl" | grep Content-Disposition | cut -d\" -f2)
+    fi
+    
     # DL
     echo ""
     if [ -e "$filename" ]; then
