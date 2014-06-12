@@ -39,7 +39,7 @@ function install() {
     [[ "$platform" == 'arch'   ]] && sudo pacman -S curl python2-eyed3 recode
 
     local dest=/usr/bin/scdl
-    [[ "$platform" == 'darwin' ]] && dest=/opt/local/bin/
+    [[ "$platform" == 'darwin' ]] && dest=/opt/local/bin/scdl
     sudo cp scdl "$dest"
 }
 
