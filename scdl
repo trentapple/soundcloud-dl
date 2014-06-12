@@ -79,10 +79,10 @@ function downsong() { #Done!
         echo "[!] The song $filename has already been downloaded..."  && $cont
     else
         echo "[-] Downloading $title..."
+        curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$songurl";
+        settags "$artist" "$title" "$filename" "$genre" "$imageurl"
+        echo -e "[i] Downloading of $filename finished\n"
     fi
-    curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$songurl";
-    settags "$artist" "$title" "$filename" "$genre" "$imageurl"
-    echo -e "[i] Downloading of $filename finished\n"
 }
 
 function downlike() {
@@ -205,18 +205,18 @@ function downset() {
             echo "[!] The song $filename has already been downloaded..."  && $cont
         else
             echo "[-] Downloading $title..."
+            #----------settags-------#
+            pageurl=$(echo "$page" | grep -A3 $id | grep url | cut -d"\"" -f2)
+            songpage=$(CURL "$pageurl")
+            imageurl=$(echo "$songpage" | tr ">" "\n" | grep -A1 '<div class="artwork-download-link"' | cut -d '"' -f 2 | tr " " "\n" | grep 'http' | sed 's/original/t500x500/g' | sed 's/png/jpg/g' )
+            genre=$(echo "$songpage" | tr ">" "\n" | grep -A1 '<span class="genre search-deprecation-notification" data="/tags/' | tr ' ' "\n" | grep '</span' | cut -d "<" -f 1 | recode html..UTF-16)
+            album=$(echo "$page" | sed s/'<meta content='/\n/g | grep 'property="og:title"' | cut -d '=' -f 4 | cut -d '"' -f 4 | recode html..UTF-16)
+            #------------------------#
+            # DL
+            curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$songurl";
+            settags "$artist" "$title" "$filename" "$genre" "$imageurl" "$album"
+            echo -e "[i] Downloading of $filename finished\n"
         fi
-        #----------settags-------#
-        pageurl=$(echo "$page" | grep -A3 $id | grep url | cut -d"\"" -f2)
-        songpage=$(CURL "$pageurl")
-        imageurl=$(echo "$songpage" | tr ">" "\n" | grep -A1 '<div class="artwork-download-link"' | cut -d '"' -f 2 | tr " " "\n" | grep 'http' | sed 's/original/t500x500/g' | sed 's/png/jpg/g' )
-        genre=$(echo "$songpage" | tr ">" "\n" | grep -A1 '<span class="genre search-deprecation-notification" data="/tags/' | tr ' ' "\n" | grep '</span' | cut -d "<" -f 1 | recode html..UTF-16)
-        album=$(echo "$page" | sed s/'<meta content='/\n/g | grep 'property="og:title"' | cut -d '=' -f 4 | cut -d '"' -f 4 | recode html..UTF-16)
-        #------------------------#
-        # DL
-        curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$songurl";
-        settags "$artist" "$title" "$filename" "$genre" "$imageurl" "$album"
-        echo -e "[i] Downloading of $filename finished\n"
     done
 }
 
