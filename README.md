@@ -39,7 +39,7 @@ Features
 * Download all song of a group page
 * Download all song of an user's liked song
 * Set tags with eyeD3 (skip the tag if eyeD3 is not installed)
-* The script stop when he see one song that have already been downloaded
+* The script stop when he see one song that is already downloaded
 * You can use it as a sync script as i do with my Raspberry PI, each night it launch the script with my soudncloud and if new song has been reposted it download it and stop when it encounter a song that has already been downloaded.
 
 
