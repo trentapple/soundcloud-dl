@@ -121,12 +121,12 @@ function downallsongs() {
         else
             ((offset++))
             typesong=$(echo "$artistpage" | tr "," "\n" | grep 'type' | cut -d '"' -f 4)
-            if [[ "$typesong" == "track" ]]; then
+            if [[ "$typesong" == "track" ]] && [[ "$onlyrepost" == "0" ]] ; then
                 artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
                 echo ""
                 echo "[i] Song n°$offset"
                 downsong "$artistsongurl"
-            elif [[ "$typesong" == "playlist" ]]; then
+            elif [[ "$typesong" == "playlist" ]] && [[ "$onlyrepost" == "0" ]]; then
                 artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | cut -d '"' -f 4)
                 echo ""
                 echo "[i] Song n°$offset"
@@ -232,24 +232,25 @@ function show_help() {
     echo ""
 }
 
-if [ -z "$1" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] ; then
+if [ -z "$1" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+    show_help
+    exit 1
+fi
+if [[ "$#" != 1 ]] && [ "$#" != 2 ]; then
+    echo "[!] Illegal number of parameters"
     show_help
     exit 1
 fi
 
 clientID="b45b1aa10f1ac2941910a7f0d10f8e28"
 writags=1
-
 curlinstalled=`command -V curl &>/dev/null`
-
 if $curlinstalled; then
     echo "[i] Using" `curl -V` | cut -c-21
 else
     echo "[!] cURL need to be installed."; exit 1;
 fi
-
 command -v eyeD3 &>/dev/null || { echo "[!] eyeD3 needs to be installed to write tags into mp3 file."; echo "[!] The script will skip this part..."; writags=0; }
-
 soundurl=$(echo "$1" | sed 's-.*soundcloud.com/-http://soundcloud.com/-' | cut -d "?" -f 1 | grep 'soundcloud.com')
 
 echo "[i] Using URL $soundurl"
@@ -271,6 +272,8 @@ elif [[ "$d2" == "likes" ]] ; then
     downlike "$soundurl"
 elif [[ "$d2" == "" ]] ; then
     echo "[i] Detected download type : All of one user's songs"
+    onlyrepost=0
+    [[ "$2" = "--onlyrepost" ]] && onlyrepost=1 && echo '[i] Only the repost will be downloaded'
     downallsongs "$soundurl"
 elif [[ "$d2" == "sets" ]] && [[ "$d3" == "" ]] ; then
     echo "[i] Detected download type : All of one user's sets"

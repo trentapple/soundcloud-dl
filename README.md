@@ -25,17 +25,20 @@ It should work with OS X, any Linux OS.
 1. Download as ZIP ( check the button at the left of the page)
 2. Unzip
 3. You can use the auto installer : `./install` (Support Debian/arch)
-4. Type `scdl {URL}`
+4. Type `scdl {URL} {OPTION}`
 
 * MAC users --> https://github.com/lukapusic/soundcloud-dl/issues/56#issuecomment-48887229
 * MORE : For help type `scdl -h` or `scdl -help` or `scdl`
 
+##OPTIONS available
+* `--onlyrepost` used with an user's page will download only the user's repost. It will be ignored otherwise.
 
 ## Features
 
 * Easy Installer
 * Autodetect wich kind of Soundcloud's link it is
 * Download all song of an user's page
+* Download all repost of an user's page
 * Download all song of a song page
 * Download all song of an user's playlist page
 * Download all song of an user's list of playlist page
