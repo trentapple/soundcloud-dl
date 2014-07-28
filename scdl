@@ -50,36 +50,27 @@ function settags() {
     fi
 }
 
-function downsong() { #Done!
-    # Grab Info
+function downsong() {
     url="$1"
-    echo "[i] Grabbing song page"
-    page=$(CURL "$url")
-    id=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9].*" | sort | uniq)
-    title=$(echo -e "$page" | grep -A1 "<em itemprop=\"name\">" | tail -n1 | sed 's/\\u0026/\&/g' | recode html..UTF-16)
+    echo "[i] Grabbing artists page"
+    page=$(CURL $url)
+    clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
+    songid=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9].*" | sort | uniq)
+
+    songinfo=$(CURL "http://api.soundcloud.com/tracks/$songid.json?client_id=$clientID" | tr "," "\n")
+    title=$(echo "$songinfo" | grep "title" | cut -d '"' -f 4 |  tr -d "\n")
     filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )
-    songurl=$(CURL "https://api.sndcdn.com/i1/tracks/$id/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
-    artist=$(echo "$page" | grep byArtist | sed 's/.*itemprop="name">\([^<]*\)<.*/\1/g' | recode html..UTF-16)
-    imageurl=$(echo "$page" | tr ">" "\n" | grep -A1 '<div class="artwork-download-link"' | cut -d '"' -f 2 | tr " " "\n" | grep 'http' | sed 's/original/t500x500/g' | sed 's/png/jpg/g' )
-    genre=$(echo "$page" | tr ">" "\n" | grep -A1 '<span class="genre search-deprecation-notification" data="/tags/' | tr ' ' "\n" | grep '</span' | cut -d "<" -f 1 | recode html..UTF-16)
-    
-        
-    # Check if Original is downloadable
-    download=$(echo "$page" | grep "download pl-button" | cut -d\" -f2)
-    if [ "$download" != "" ]
-    then
-      echo "[i] This file can be downloaded in original"
-      songurl="https://soundcloud.com$download"
-      filename=$(curl -s --user-agent 'Mozilla/5.0' -I -L "$songurl" | grep Content-Disposition | cut -d\" -f2)
-    fi
-    
-    # DL
-    echo ""
+    songurl=$(echo "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
+    realsongurl=$(echo "$songurl?client_id=$clientID")
+    artist=$(echo "$songinfo" | grep "username" | cut -d '"' -f 4)
+    imageurl=$(echo "$songinfo" | grep "artwork_url" | cut -d '"' -f 4 | sed 's/large/t500x500/g')
+    genre=$(echo "$songinfo" | grep "genre" | cut -d '"' -f 4)
+
     if [ -e "$filename" ]; then
         echo "[!] The song $filename has already been downloaded..."  && $cont
     else
         echo "[-] Downloading $title..."
-        curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$songurl";
+        curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$realsongurl";
         settags "$artist" "$title" "$filename" "$genre" "$imageurl"
         echo -e "[i] Downloading of $filename finished\n"
     fi
@@ -88,63 +79,126 @@ function downsong() { #Done!
 function downlike() {
     artistnm=$(echo "$1" | cut -d '/' -f 4)
     likeurl=$(echo "http://soundcloud.com/$artistnm")
-    echo "[i] Grabbing artists page"
+    echo "[i] Grabbing artist's likes page"
     page=$(CURL $likeurl)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
-    likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites?client_id=$clientID" | sed '1,2d' | grep "<permalink-url>" | sed '1d' | sed -n '1~2p')
-    songcount=$(echo "$likepage" | wc -l)
-    echo "[i] Found $songcount songs! (50 is max)"
-    for (( i=1; i <= $songcount; i++ ))
+
+    offset=0
+    stilllikessongs=1
+    while [[ $stilllikessongs == "1" ]]
     do
-        echo -e "\n---------- Downloading Song n°$i ----------"
-        thisongurl=$(echo "$likepage" | sed -n "$i"p | cut -d ">" -f 2 | cut -d "<" -f 1)
-        downsong "$thisongurl"
-        echo "----- Downloading Song n°$i finished ------"
+        likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
+        if [[ "$likepage" == "[]" ]]; then
+            stilllikessongs=0
+            echo "[i] There was $offset songs."
+        else
+            ((offset++))
+            likesongurl=$(echo "$likepage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
+            echo ""
+            echo "[i] Song liked n°$offset"
+            downsong "$likesongurl"
+        fi
     done
+
 }
 
 function downallsongs() {
-    # Grab Info
     url="$1"
     echo "[i] Grabbing artists page"
     page=$(CURL $url)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
-    echo "[i] Grabbing all song info"
-    songs=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds?limit=256&offset=0&linked_partitioning=1&client_id=$clientID" | tr -d "\n" | sed 's/<\/stream-item>/\n/g' | sed '$d')
-    songcount=$(echo "$songs" | wc -l)
-    echo "[i] Found $songcount songs! (200 is max)"
-    if [ -z "$songs" ]; then
-        echo "[!] No songs found at $1" && exit
-    fi
-    echo ""
-    for (( i=1; i <= $songcount; i++ ))
+    
+    offset=0
+    stillsongs=1
+    while [[ $stillsongs == "1" ]]
     do
-        playlist=$(echo -e "$songs"| sed -n "$i"p | tr ">" "\n" | grep "</kind" | cut -d "<" -f 1 | grep playlist)
-        if [ "$playlist" = "playlist" ] ; then
-            playlisturl=$(echo -e "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</permalink-url" | cut -d "<" -f 1 | head -n 1 | recode html..UTF-16)
-            echo "[i] *--------Donwloading a set----------*"
-            downset $playlisturl
-            echo -e "[i] *-------- Set Downloaded -----------*\n"
+        artistpage=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID")
+        echo "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID"
+        if [[ "$artistpage" == "[]" ]]; then
+            stillsongs=0
+            echo "[i] There was $offset songs."
         else
-            title=$(echo -e "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</title" | cut -d "<" -f 1 | recode html..UTF-16)
-            filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )
-            if [ -e "$filename" ]; then
-                echo "[!] The song $filename has already been downloaded..."  && $cont
+            ((offset++))
+            typesong=$(echo "$artistpage" | tr "," "\n" | grep 'type' | cut -d '"' -f 4)
+            if [[ "$typesong" == "track" ]]; then
+                artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
+                echo ""
+                echo "[i] Song n°$offset"
+                downsong "$artistsongurl"
+            elif [[ "$typesong" == "playlist" ]]; then
+                artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | cut -d '"' -f 4)
+                echo ""
+                echo "[i] Song n°$offset"
+                downset "$artistsongurl"
+            elif [[ "$typesong" == "playlist_repost" ]]; then
+                artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | cut -d '"' -f 4)
+                echo ""
+                echo "[i] Song n°$offset"
+                downset "$artistsongurl"
+            elif [[ "$typesong" == "track_repost" ]]; then
+                artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
+                echo ""
+                echo "[i] Song n°$offset"
+                downsong "$artistsongurl"
             fi
-            artist=$(echo "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</username" | cut -d "<" -f 1 | recode html..UTF-16)
-            genre=$(echo "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</genre" | cut -d "<" -f 1 | recode html..UTF-16)
-            imageurl=$(echo "$songs" | sed -n "$i"p | tr ">" "\n" | grep "</artwork-url" | cut -d "<" -f 1 | sed 's/large/t500x500/g')
-            songID=$(echo "$songs" | sed -n "$i"p | tr " " "\n" | grep "</id>" | head -n 1 | cut -d ">" -f 2 | cut -d "<" -f 1)
-            # DL
-            echo "[-] Downloading the song $title..."
-            songurl=$(CURL "https://api.sndcdn.com/i1/tracks/$songID/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
-            curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$songurl";
-            settags "$artist" "$title" "$filename" "$genre" "$imageurl"
-            echo -e "[i] Downloading of $filename finished\n"
+
         fi
     done
+}
+
+function downset() {
+    echo "[i] Grabbing set page"
+    url="$1"
+    setpage=$(CURL $url)
+    clientID=$(echo "$setpage" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
+    playlistid=$(echo -e "$setpage" | grep 'data-sc-playlist-id' | sed -n '1p'| cut -d '"' -f 4)
+
+    offset=0
+    stilllikessongs=1
+    while [[ $stilllikessongs == "1" ]]
+    do
+        setpage=$(CURL "https://api.soundcloud.com/playlists/$playlistid.json?limit=1&offset=$offset&client_id=$clientID")
+        if [[ "$setpage" == "[]" ]]; then
+            stilllikessongs=0
+            echo "[i] There was $offset songs."
+        else
+            ((offset++))
+            setsongurl=$(echo "$setpage" | tr "," "\n" | grep 'permalink_url' | sed -n '4p' | cut -d '"' -f 4)
+            echo ""
+            echo "[i] Song liked n°$offset"
+            downsong "$setsongurl"
+        fi
+    done
+}
+
+function downallsets() {
+    artistnm=$(echo "$1" | cut -d '/' -f 4)
+    seturl=$(echo "http://soundcloud.com/$artistnm")
+    echo "[i] Grabbing artist's set page"
+    page=$(CURL $seturl)
+    clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
+    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$seturl&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
+    
+    offset=0
+    stilllikessongs=1
+    while [[ $stilllikessongs == "1" ]]
+    do
+        allsetpage=$(CURL "https://api.soundcloud.com/users/$artistID/playlists.json?limit=1&offset=$offset&client_id=$clientID")
+        if [[ "$allsetpage" == "[]" ]]; then
+            stilllikessongs=0
+            echo "[i] There was $offset songs."
+        else
+            ((offset++))
+            thisset=$(echo "$allsetpage" | tr "," "\n" | grep 'permalink_url' | sed -n '1p'| cut -d '"' -f 4)
+            echo ""
+            echo "[i] Set n°$offset"
+            downset "$thisset"
+            echo "[i] Set n°$offset downloaded"
+        fi
+    done
+
 }
 
 function downgroup() {
@@ -154,7 +208,7 @@ function downgroup() {
     groupid=$(echo "$groupage" | grep "html5-code-groups" | tr " " "\n" | grep "html5-code-groups-" | cut -d '"' -f 2 | sed '2d' | cut -d '-' -f 4)
     clientID=$(echo "$groupage" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     trackspage=$(CURL "http://api.soundcloud.com/groups/$groupid/tracks.json?client_id=$clientID" | tr "}" "\n")
-    trackspage=$(echo "$trackspage" | tr "," "\n" | grep '"permalink_url":' | sed '1d' | sed -n '1~2p')
+    trackspage=$(echo "$trackspage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | sed -n '1~2p')
     songcount=$(echo "$trackspage" | wc -l)
     echo "[i] Found $songcount songs!"
     for (( i=1; i <= $songcount; i++ ))
@@ -163,87 +217,6 @@ function downgroup() {
         thisongurl=$(echo "$trackspage" | sed -n "$i"p | cut -d '"' -f 4)
         downsong "$thisongurl"
         echo "----- Downloading Song n°$i finished ------"
-    done
-}
-
-function downset() {
-    # Grab Info
-    echo "[i] Grabbing set page"
-    url="$1"
-    page=$(CURL $url)
-    settitle=$(echo -e "$page" | grep -A1 "<em itemprop=\"name\">" | tail -n1)
-    setsongs=$(echo "$page" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9]*" | sort | uniq)
-    echo "[i] Found set "$settitle""
-    if [ -z "$setsongs" ]; then
-        echo "[!] No songs found"
-        exit 1
-    fi
-    songcountset=$(echo "$setsongs" | wc -l)
-    echo "[i] Found $songcountset songs"
-    echo ""
-    for (( numcursong=1; numcursong <= $songcountset; numcursong++ ))
-    do
-        id=$(echo "$setsongs" | sed -n "$numcursong"p)
-        title=$(echo -e "$page" | grep data-sc-track | grep $id | grep -oE 'rel=.nofollow.>[^<]*' | sed 's/rel="nofollow">//' | sed 's/\\u0026/\&/g' | recode html..UTF-16)
-        if [[ "$title" == "Play" ]] ; then
-            title=$(echo -e "$page" | grep $id | grep id | grep -oE "\"title\":\"[^\"]*" | sed 's/"title":"//' | sed 's/\\u0026/\&/g' | recode html..UTF-16)
-        fi
-        artist=$(echo "$page" | grep -A3 $id | grep byArtist | cut -d"\"" -f2 | recode html..UTF-16)
-        filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )
-        songurl=$(CURL "https://api.sndcdn.com/i1/tracks/$id/streams?client_id=$clientID" | cut -d '"' -f 4 | sed 's/\\u0026/\&/g')
-        
-        # Check if Original is downloadable
-        download=$(echo "$page" | grep data-sc-track=\"$id | grep "download pl-button" | grep -o href=.* | cut -d\" -f2)
-        if [ "$download" != "" ]
-        then
-          echo "[i] This file can be downloaded in original"
-          songurl="https://soundcloud.com$download"
-          filename=$(curl -s --user-agent 'Mozilla/5.0' -I -L "$songurl" | grep Content-Disposition | cut -d\" -f2)
-        fi
-        
-        if [ -e "$filename" ]; then
-            echo "[!] The song $filename has already been downloaded..."  && $cont
-        else
-            echo "[-] Downloading $title..."
-            #----------settags-------#
-            pageurl=$(echo "$page" | grep -A3 $id | grep url | cut -d"\"" -f2)
-            songpage=$(CURL "$pageurl")
-            imageurl=$(echo "$songpage" | tr ">" "\n" | grep -A1 '<div class="artwork-download-link"' | cut -d '"' -f 2 | tr " " "\n" | grep 'http' | sed 's/original/t500x500/g' | sed 's/png/jpg/g' )
-            genre=$(echo "$songpage" | tr ">" "\n" | grep -A1 '<span class="genre search-deprecation-notification" data="/tags/' | tr ' ' "\n" | grep '</span' | cut -d "<" -f 1 | recode html..UTF-16)
-            album=$(echo "$page" | sed s/'<meta content='/\n/g | grep 'property="og:title"' | cut -d '=' -f 4 | cut -d '"' -f 4 | recode html..UTF-16)
-            #------------------------#
-            # DL
-            curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$songurl";
-            settags "$artist" "$title" "$filename" "$genre" "$imageurl" "$album"
-            echo -e "[i] Downloading of $filename finished\n"
-        fi
-    done
-}
-
-function downallsets() {
-    allsetsurl="$1"
-    echo "[i] Grabbing user sets page"
-    allsetspage=$(CURL "$allsetsurl")
-    allsetsnumpages=$(echo "$allsetspage" | grep '<li class="set">' | wc -l)
-    echo "[i] $allsetsnumpages sets pages found"
-    for (( allsetsnumcurpage=1; allsetsnumcurpage <= $allsetsnumpages; allsetsnumcurpage++ ))
-    do
-        echo "[i] Grabbing user sets page $allsetsnumcurpage"
-        allsetspage=$(CURL "$allsetsurl?page=$allsetsnumcurpage")
-        allsetssets=$(echo "$allsetspage" | grep -A1 "li class=\"set\"" | grep "<h3>" | sed 's/.*href="\([^"]*\)">.*/\1/g')
-        if [ -z "$allsetssets" ]; then
-            echo "[!] No sets found on user sets page $allsetsnumcurpage"
-            continue
-        fi
-        allsetssetscount=$(echo "$allsetssets" | wc -l)
-        echo "[i] Found $allsetssetscount set(s) on user sets page $allsetsnumcurpage"
-        for (( allsetsnumcurset=1; allsetsnumcurset <= $allsetssetscount; allsetsnumcurset++ ))
-        do
-            allsetsseturl=$(echo "$allsetssets" | sed -n "$allsetsnumcurset"p)
-            echo "*-------- Downloading set n°$allsetsnumcurset ----------*"
-            downset "http://soundcloud.com$allsetsseturl"
-            echo "*-------- Set n°$allsetsnumcurset Downloaded -----------*"
-        done
     done
 }
 
