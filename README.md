@@ -1,35 +1,34 @@
-Souncloud music downloader
-==============
+### Souncloud Music Downloader
 
-Description
---------------
+## Description
+
 This shell script is able to download music from http://www.soundcloud.com.
 It should work with OS X, any Linux OS.
 
-System requirements
---------------
+## System requirements
+
 * Unix like OS with a proper shell
 * Tools wich are preinstalled on linux (I don't know  for OS X) : `sed` ; `tail` ; `tr` ; `echo` ; `grep` ; `head` ; `cut` ; `sort` ; `uniq`.
 
 
-Required tools
---------------
+## Required tools
+
 * You will need `eyeD3` ; `curl` ; `recode`
 * The installer install all the required tools.
 
 
-Instructions
---------------
-* 1) Download as ZIP ( check the button at the left of the page)
-* 2) Unzip
-* 3) You can use the auto installer : `./install` (Support Debian/arch)
-* 3) MAC users : https://github.com/lukapusic/soundcloud-dl/issues/56#issuecomment-48887229
-* 4) Type `scdl {URL}`
+## Instructions
+
+1. Download as ZIP ( check the button at the left of the page)
+2. Unzip
+3. You can use the auto installer : `./install` (Support Debian/arch)
+4. MAC users : https://github.com/lukapusic/soundcloud-dl/issues/56#issuecomment-48887229
+5. Type `scdl {URL}`
 * MORE : For help type `scdl -h` or `scdl -help` or `scdl`
 
 
-Features
---------------
+## Features
+
 * Easy Installer
 * Autodetect wich kind of Soundcloud's link it is
 * Download all song of an user's page
@@ -43,13 +42,11 @@ Features
 * You can use it as a sync script as i do with my Raspberry PI, each night it launch the script with my soudncloud and if new song has been reposted it download it and stop when it encounter a song that has already been downloaded.
 
 
-More information
---------------
-The script cannot handle letters like `û` cause to recode. But if i remove it, instead of `&` you will have `&amp;` (the html code of `&`) and as i think there is more `&` than `û` i prefer to let it...
+## More information
 
-You can also check out this online tool: [http://soundcloud-dl.com/](http://soundcloud-dl.com/).
+Changelogs of the latest update : [Here](https://github.com/lukapusic/soundcloud-dl/commit/372f1cafd20868c58d0d6edd940a96071fd9449f#commitcomment-7174011)
 
 
-License
---------------
+## License
+
 [GPL v2](https://www.gnu.org/licenses/gpl-2.0.txt), orignal author [Luka Pusic](http://pusic.si)
