@@ -1,4 +1,7 @@
-### Souncloud Music Downloader
+<p align="center">
+  <img src="http://soundcloud-dl.com/soundcloud-download-logo.png" alt="Logo"/>
+</p>
+# Souncloud Music Downloader
 
 ## Description
 
@@ -8,13 +11,13 @@ It should work with OS X, any Linux OS.
 ## System requirements
 
 * Unix like OS with a proper shell
-* Tools wich are preinstalled on linux (I don't know  for OS X) : `sed` ; `tail` ; `tr` ; `echo` ; `grep` ; `head` ; `cut` ; `sort` ; `uniq`.
+* Tools we use : `sed` ; `tr` ; `echo` ; `grep` ; `cut` ; `sort` ; `uniq`.
 
 
 ## Required tools
 
-* You will need `eyeD3` ; `curl` ; `recode`
-* The installer install all the required tools.
+* You will need `eyeD3` ; `curl`
+* The installer install all the required tools except for Mac Os X.
 
 
 ## Instructions
@@ -22,8 +25,9 @@ It should work with OS X, any Linux OS.
 1. Download as ZIP ( check the button at the left of the page)
 2. Unzip
 3. You can use the auto installer : `./install` (Support Debian/arch)
-4. MAC users : https://github.com/lukapusic/soundcloud-dl/issues/56#issuecomment-48887229
-5. Type `scdl {URL}`
+4. Type `scdl {URL}`
+
+* MAC users --> https://github.com/lukapusic/soundcloud-dl/issues/56#issuecomment-48887229
 * MORE : For help type `scdl -h` or `scdl -help` or `scdl`
 
 

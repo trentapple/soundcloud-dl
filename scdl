@@ -58,13 +58,13 @@ function downsong() {
     songid=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9].*" | sort | uniq)
 
     songinfo=$(CURL "http://api.soundcloud.com/tracks/$songid.json?client_id=$clientID" | tr "," "\n")
-    title=$(echo "$songinfo" | grep "title" | cut -d '"' -f 4 |  tr -d "\n")
-    filename=$(echo "$title".mp3 | tr '*/\?"<>|' '+       ' )
-    songurl=$(echo "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
-    realsongurl=$(echo "$songurl?client_id=$clientID")
-    artist=$(echo "$songinfo" | grep "username" | cut -d '"' -f 4)
-    imageurl=$(echo "$songinfo" | grep "artwork_url" | cut -d '"' -f 4 | sed 's/large/t500x500/g')
-    genre=$(echo "$songinfo" | grep "genre" | cut -d '"' -f 4)
+    title=$(echo -e "$songinfo" | grep "title" | cut -d '"' -f 4 |  tr -d "\n" )
+    filename=$(echo -e "$title".mp3 | tr '*/\?"<>|' '+       ' )
+    songurl=$(echo -e "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
+    realsongurl=$(echo -e "$songurl?client_id=$clientID")
+    artist=$(echo -e "$songinfo" | grep "username" | cut -d '"' -f 4)
+    imageurl=$(echo -e "$songinfo" | grep "artwork_url" | cut -d '"' -f 4 | sed 's/large/t500x500/g')
+    genre=$(echo -e "$songinfo" | grep "genre" | cut -d '"' -f 4)
 
     if [ -e "$filename" ]; then
         echo "[!] The song $filename has already been downloaded..."  && $cont
@@ -115,7 +115,6 @@ function downallsongs() {
     while [[ $stillsongs == "1" ]]
     do
         artistpage=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID")
-        echo "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID"
         if [[ "$artistpage" == "[]" ]]; then
             stillsongs=0
             echo "[i] There was $offset songs."
@@ -249,7 +248,6 @@ else
     echo "[!] cURL need to be installed."; exit 1;
 fi
 
-command -v recode &>/dev/null || { echo "[!] Recode needs to be installed."; exit 1; }
 command -v eyeD3 &>/dev/null || { echo "[!] eyeD3 needs to be installed to write tags into mp3 file."; echo "[!] The script will skip this part..."; writags=0; }
 
 soundurl=$(echo "$1" | sed 's-.*soundcloud.com/-http://soundcloud.com/-' | cut -d "?" -f 1 | grep 'soundcloud.com')
