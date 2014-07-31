@@ -38,9 +38,7 @@ function install() {
     [[ "$platform" == 'redhat' ]] && sudo yum install curl python-eyed3
     [[ "$platform" == 'arch'   ]] && sudo pacman -S curl python2-eyed3
 
-    local dest=/usr/bin/scdl
-    [[ "$platform" == 'darwin' ]] && dest=/opt/local/bin/scdl
-    sudo cp scdl "$dest"
+    sudo cp scdl /usr/bin/
 }
 
 function setpath() {
