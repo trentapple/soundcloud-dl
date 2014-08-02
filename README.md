@@ -22,7 +22,7 @@ It should work with OS X, any Linux OS.
 
 ## Instructions
 
-1. Download as ZIP ( check the button at the left of the page)
+1. Download [this](https://github.com/lukapusic/soundcloud-dl/archive/v2.0.zip)
 2. Unzip
 3. You can use the auto installer : `./install` (Support Debian/arch)
 4. Type `scdl {URL} {OPTION}`
