@@ -109,7 +109,7 @@ function downallsongs() {
     page=$(CURL $url)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
-    
+
     offset=0
     stillsongs=1
     while [[ $stillsongs == "1" ]]
@@ -120,7 +120,7 @@ function downallsongs() {
             echo "[i] There was $offset songs."
         else
             ((offset++))
-            typesong=$(echo "$artistpage" | tr "," "\n" | grep 'type' | cut -d '"' -f 4)
+            typesong=$(echo "$artistpage" | tr "," "\n" | grep '"type"' | cut -d '"' -f 4)
             if [[ "$typesong" == "track" ]] && [[ "$onlyrepost" == "0" ]] ; then
                 artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
                 echo ""
@@ -179,7 +179,7 @@ function downallsets() {
     page=$(CURL $seturl)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$seturl&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
-    
+
     offset=0
     stilllikessongs=1
     while [[ $stilllikessongs == "1" ]]
