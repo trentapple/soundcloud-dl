@@ -82,7 +82,7 @@ function downlike() {
     echo "[i] Grabbing artist's likes page"
     page=$(CURL $likeurl)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
+    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
 
     offset=0
     stilllikessongs=1
@@ -108,7 +108,7 @@ function downallsongs() {
     echo "[i] Grabbing artists page"
     page=$(CURL $url)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
+    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
 
     offset=0
     stillsongs=1
@@ -178,7 +178,7 @@ function downallsets() {
     echo "[i] Grabbing artist's set page"
     page=$(CURL $seturl)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$seturl&client_id=$clientID" | grep -Po '(?<=/)[0-9]*(?=\.json)')
+    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$seturl&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
 
     offset=0
     stilllikessongs=1
