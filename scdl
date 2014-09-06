@@ -14,19 +14,19 @@ function CURL(){
 }
 
 function config() {
-    if [ -f /$HOME/.scdl.cfg ]; then
-        source /$HOME/.scdl.cfg
+    if [ -f "/$HOME/.scdl.cfg" ]; then
+        source "/$HOME/.scdl.cfg"
         if [ "$continue" = "true" ]; then
             cont=continue
         else
             cont=exit
         fi
-        cd $pathtomusic
+        cd "$pathtomusic"
         echo "[i] Path where i will download music : $pathtomusic"
         echo "[i] I will $cont if i found a file that already exist"
     else
         echo '[i] The config file do not exist...'
-        echo '[i] Please run the Installer First or add The sample config file'
+        echo '[i] Please run the Installer first or add The sample config file'
         exit
     fi
 

@@ -44,31 +44,30 @@ function install() {
 function setpath() {
     echo "Where do you want to download your Music?"
     read -p 'path : ' path
-    if [ -d $path ]; then
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
-        echo -e 'Path set !\n'
-    else
+    while [ ! -d "$path" ]
+    do
         echo 'The path do not exist...'
         read -p 'Would you like to Create it? (y/n)?' choice
         if [ "$choice" = "y" ]; then
             mkdir $path
-            echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
-            echo -e 'Path set !\n'
-        else
-            setpath
+            "$?" && echo -e 'Error while creating the directory, living...' && exit 1
         fi
-    fi
+        echo "Where do you want to download your Music?"
+        read -p 'path : ' path
+    done
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > "/$HOME/.scdl.cfg"
+        echo -e 'Path set !\n'
 }
 
 function setcon() {
     read -p "Would you like to stop the script when it encounter a music that already exist ?(y/n)" choice
     if [ "$choice" = "y" ]; then
         cont="false"
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > "/$HOME/.scdl.cfg"
         echo -e 'The script will exit if it encounter a file that already exist\n'
     elif [ "$choice" = "n" ]; then
         cont="true"
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > /$HOME/.scdl.cfg
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > "/$HOME/.scdl.cfg"
         echo -e 'The script will skip the music that already exist\n'
     else
         echo 'Bad option'
@@ -95,8 +94,8 @@ function detectedOS(){
     [[ -f /etc/arch-release    ]] && platform='arch'
 }
 
-if [ -f /$HOME/.scdl.cfg ]; then
-    source /$HOME/.scdl.cfg
+if [ -f "/$HOME/.scdl.cfg" ]; then
+    source "/$HOME/.scdl.cfg"
     path=$pathtomusic
     cont=$continue
     menu
