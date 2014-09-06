@@ -66,10 +66,18 @@ function downsong() {
     echo "[i] Grabbing artists page"
     page=$(CURL $url)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    songid=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9].*" | sort | uniq)
+    songID=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9].*" | sort | uniq)
+    fromjsontomp3 "$songID" "$clientID"
+    
+}
 
-    songinfo=$(CURL "http://api.soundcloud.com/tracks/$songid.json?client_id=$clientID" | tr "," "\n")
-    title=$(echo -e "$songinfo" | grep '"title"' | cut -d '"' -f 4 |  tr -d "\n" )
+function fromjsontomp3 {
+    clientID="$2"
+    songID="$1"
+    songinfo=$(CURL "http://api.soundcloud.com/tracks/$songID.json?client_id=$clientID" | tr "," "\n")
+    titletemp=$(echo -ne "$songinfo" | grep '"title"' )
+    titletemp="${titletemp:9:-1}"
+    title=$(echo -ne `printf "$titletemp"`)
     filename=$(echo -e "$title".mp3 | tr '*/\?"<>|' '+       ' )
     songurl=$(echo -e "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
     realsongurl=$(echo -e "$songurl?client_id=$clientID")
@@ -87,31 +95,48 @@ function downsong() {
     fi
 }
 
-function downlike() {
+function downlike()  { 
+    echo "[i] Grabbing artist's likes page"
     artistnm=$(echo "$1" | cut -d '/' -f 4)
     likeurl=$(echo "http://soundcloud.com/$artistnm")
-    echo "[i] Grabbing artist's likes page"
     page=$(CURL $likeurl)
+
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
 
     offset=0
-    stilllikessongs=1
-    while [[ $stilllikessongs == "1" ]]
+    likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
+    while [[ "$likepage" != "[]" ]]
     do
+        ((offset++))
+        setsongID=$(echo "$likepage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
+        echo ""
+        echo "[i] Song liked n°$offset"
+        fromjsontomp3 "$setsongID" "$clientID"
         likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
-        if [[ "$likepage" == "[]" ]]; then
-            stilllikessongs=0
-            echo "[i] There was $offset songs."
-        else
-            ((offset++))
-            likesongurl=$(echo "$likepage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
-            echo ""
-            echo "[i] Song liked n°$offset"
-            downsong "$likesongurl"
-        fi
     done
+}
 
+function downset() {
+    echo "[i] Grabbing set page"
+    url="$1"
+    setpage=$(CURL $url)
+
+    clientID=$(echo "$setpage" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
+    playlistID=$(echo -e "$setpage" | grep 'data-sc-playlist-id' | sed -n '1p'| cut -d '"' -f 4)
+
+    offset=0
+    setpage=$(CURL "https://api.soundcloud.com/playlists/$playlistID.json?limit=1&offset=$offset&client_id=$clientID")
+    while [[ "$setpage" != "[]" ]]
+    do
+        ((offset++))
+        setsongID=$(echo "$setpage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
+        echo ""
+        echo "[i] Song liked n°$offset"
+        fromjsontomp3 "$setsongID" "$clientID"
+        setpage=$(CURL "https://api.soundcloud.com/playlists/$playlistID.json?limit=1&offset=$offset&client_id=$clientID")
+    done
+    echo "[i] There was $offset songs."
 }
 
 function downallsongs() {
@@ -154,31 +179,6 @@ function downallsongs() {
                 downsong "$artistsongurl"
             fi
 
-        fi
-    done
-}
-
-function downset() {
-    echo "[i] Grabbing set page"
-    url="$1"
-    setpage=$(CURL $url)
-    clientID=$(echo "$setpage" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    playlistid=$(echo -e "$setpage" | grep 'data-sc-playlist-id' | sed -n '1p'| cut -d '"' -f 4)
-
-    offset=0
-    stilllikessongs=1
-    while [[ $stilllikessongs == "1" ]]
-    do
-        setpage=$(CURL "https://api.soundcloud.com/playlists/$playlistid.json?limit=1&offset=$offset&client_id=$clientID")
-        if [[ "$setpage" == "[]" ]]; then
-            stilllikessongs=0
-            echo "[i] There was $offset songs."
-        else
-            ((offset++))
-            setsongurl=$(echo "$setpage" | tr "," "\n" | grep 'permalink_url' | sed -n '4p' | cut -d '"' -f 4)
-            echo ""
-            echo "[i] Song liked n°$offset"
-            downsong "$setsongurl"
         fi
     done
 }
