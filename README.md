@@ -35,7 +35,7 @@ It should work with OS X, any Linux OS.
 ## Features
 
 * Easy Installer
-* Autodetect wich kind of Soundcloud's link it is
+* Automatically detect which kind of Soundcloud's link you have provided
 * Download all song of an user's page
 * Download all repost of an user's page
 * Download all song of a song page
