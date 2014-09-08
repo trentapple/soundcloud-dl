@@ -68,7 +68,7 @@ function downsong() {
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     songID=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9].*" | sort | uniq)
     fromjsontomp3 "$songID" "$clientID"
-    
+
 }
 
 function fromjsontomp3 {
@@ -95,7 +95,7 @@ function fromjsontomp3 {
     fi
 }
 
-function downlike()  { 
+function downlike()  {
     echo "[i] Grabbing artist's likes page"
     artistnm=$(echo "$1" | cut -d '/' -f 4)
     likeurl=$(echo "http://soundcloud.com/$artistnm")
@@ -255,13 +255,12 @@ fi
 
 clientID="b45b1aa10f1ac2941910a7f0d10f8e28"
 writags=1
-curlinstalled=`command -V curl &>/dev/null`
-if $curlinstalled; then
-    echo "[i] Using" `curl -V` | cut -c-21
-else
-    echo "[!] cURL need to be installed."; exit 1;
-fi
+
+command -v curl &>/dev/null || { echo "[!] cURL needs to be installed in order to run the script."; echo "[!] The script will exit..."; exit 1; }
 command -v eyeD3 &>/dev/null || { echo "[!] eyeD3 needs to be installed to write tags into mp3 file."; echo "[!] The script will skip this part..."; writags=0; }
+echo "[i] Using" `curl -V` | cut -c-21
+
+
 soundurl=$(echo "$1" | sed 's-.*soundcloud.com/-http://soundcloud.com/-' | cut -d "?" -f 1 | grep 'soundcloud.com')
 
 echo "[i] Using URL $soundurl"
