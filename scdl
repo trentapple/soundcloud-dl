@@ -75,10 +75,8 @@ function fromjsontomp3 {
     clientID="$2"
     songID="$1"
     songinfo=$(CURL "http://api.soundcloud.com/tracks/$songID.json?client_id=$clientID" | tr "," "\n")
-    titletemp=$(echo -ne "$songinfo" | grep '"title"' )
-    titletemp="${titletemp:9:-1}"
-    title=$(echo -ne `printf "$titletemp"`)
-    filename=$(echo -e "$title".mp3 | tr '*/\?"<>|' '+       ' )
+    title=$(echo -ne "$songinfo" | grep '"title"' | cut -c 10- | rev | cut -c 2- | rev )
+    filename=$(echo -ne "$title".mp3 | tr '*/\?"<>|.' '+        ' )
     songurl=$(echo -e "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
     realsongurl=$(echo -e "$songurl?client_id=$clientID")
     artist=$(echo -e "$songinfo" | grep "username" | cut -d '"' -f 4)
@@ -107,7 +105,7 @@ function downlike()  {
     offset=0
     likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
     echo "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset"
-    while [[ "$likepage" != "[]" ]]
+    while [[ $(echo "$likepage" | grep 'id') != '' ]]
     do
         ((offset++))
         setsongID=$(echo "$likepage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
@@ -131,6 +129,7 @@ function downset() {
     offset=0
     setpage=$(CURL "https://api.soundcloud.com/playlists/$playlistID.json?limit=1&offset=$offset&client_id=$clientID")
     setTitle=$(echo "$setpage" | tr "{" "\n" | grep '"playlist"' | tr "," "\n" | grep '"title"' | cut -d '"' -f 4)
+    trackExist=$(echo "$setpage" | tr "," "\n" | grep '"tracks"' | cut -d ':' -f 2)
     echo "https://api.soundcloud.com/playlists/$playlistID.json?limit=1&offset=$offset&client_id=$clientID"
     while [[ "$trackExist" != '[]' ]]
     do
@@ -154,40 +153,37 @@ function downallsongs() {
     artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
 
     offset=0
-    stillsongs=1
-    while [[ $stillsongs == "1" ]]
+    artistpage=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID")
+    echo "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID"
+    while [[ $(echo "$artistpage" | grep 'id') != '' ]]
     do
-        artistpage=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID")
-        if [[ "$artistpage" == "[]" ]]; then
-            stillsongs=0
-            echo "[i] There was $offset songs."
-        else
-            ((offset++))
-            typesong=$(echo "$artistpage" | tr "," "\n" | grep '"type"' | cut -d '"' -f 4)
-            if [[ "$typesong" == "track" ]] && [[ "$onlyrepost" == "0" ]] ; then
-                artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
-                echo ""
-                echo "[i] Song n°$offset"
-                downsong "$artistsongurl"
-            elif [[ "$typesong" == "playlist" ]] && [[ "$onlyrepost" == "0" ]]; then
-                artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | cut -d '"' -f 4)
-                echo ""
-                echo "[i] Song n°$offset"
-                downset "$artistsongurl"
-            elif [[ "$typesong" == "playlist_repost" ]]; then
-                artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | cut -d '"' -f 4)
-                echo ""
-                echo "[i] Song n°$offset"
-                downset "$artistsongurl"
-            elif [[ "$typesong" == "track_repost" ]]; then
-                artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
-                echo ""
-                echo "[i] Song n°$offset"
-                downsong "$artistsongurl"
-            fi
-
+        ((offset++))
+        typesong=$(echo "$artistpage" | tr "," "\n" | grep '"type"' | cut -d '"' -f 4)
+        if [[ "$typesong" == "track" ]] && [[ "$onlyrepost" == "0" ]] ; then
+            artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
+            echo ""
+            echo "[i] Song n°$offset"
+            downsong "$artistsongurl"
+        elif [[ "$typesong" == "playlist" ]] && [[ "$onlyrepost" == "0" ]]; then
+            artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | cut -d '"' -f 4)
+            echo ""
+            echo "[i] Song n°$offset"
+            downset "$artistsongurl"
+        elif [[ "$typesong" == "playlist_repost" ]]; then
+            artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | cut -d '"' -f 4)
+            echo ""
+            echo "[i] Song n°$offset"
+            downset "$artistsongurl"
+        elif [[ "$typesong" == "track_repost" ]]; then
+            artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
+            echo ""
+            echo "[i] Song n°$offset"
+            downsong "$artistsongurl"
         fi
+        artistpage=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID")
     done
+    echo ""
+    echo "[i] There was $offset songs."
 }
 
 function downallsets() {
@@ -198,23 +194,21 @@ function downallsets() {
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$seturl&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
 
-    offset=0
-    stilllikessongs=1
-    while [[ $stilllikessongs == "1" ]]
+    all_offset=0
+    allsetpage=$(CURL "https://api.soundcloud.com/users/$artistID/playlists.json?limit=1&offset=$all_offset&client_id=$clientID")
+    echo "https://api.soundcloud.com/users/$artistID/playlists.json?limit=1&offset=$all_offset&client_id=$clientID"
+    while [[ $(echo "$allsetpage" | grep 'id') != '' ]]
     do
-        allsetpage=$(CURL "https://api.soundcloud.com/users/$artistID/playlists.json?limit=1&offset=$offset&client_id=$clientID")
-        if [[ "$allsetpage" == "[]" ]]; then
-            stilllikessongs=0
-            echo "[i] There was $offset songs."
-        else
-            ((offset++))
-            thisset=$(echo "$allsetpage" | tr "," "\n" | grep 'permalink_url' | sed -n '1p'| cut -d '"' -f 4)
-            echo ""
-            echo "[i] Set n°$offset"
-            downset "$thisset"
-            echo "[i] Set n°$offset downloaded"
-        fi
+        ((all_offset++))
+        thisset=$(echo "$allsetpage" | tr "," "\n" | grep '"permalink_url"'  | sed -n 1p | cut -d '"' -f 4) 
+        echo ""
+        echo "[i] Set n°$all_offset from $artistnm"
+        downset "$thisset"
+        echo "[i] Set n°$all_offset from $artistnm downloaded"
+        allsetpage=$(CURL "https://api.soundcloud.com/users/$artistID/playlists.json?limit=1&offset=$all_offset&client_id=$clientID")
     done
+    echo ""
+    echo "[i] There was $all_offset sets."
 
 }
 
