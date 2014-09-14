@@ -75,7 +75,7 @@ function fromjsontomp3 {
     clientID="$2"
     songID="$1"
     songinfo=$(CURL "http://api.soundcloud.com/tracks/$songID.json?client_id=$clientID" | tr "," "\n")
-    title=$(echo -ne "$songinfo" | grep '"title"' | cut -c 10- | rev | cut -c 2- | rev | tr '*/\?"<>|.' '+        ' )
+    title=$(echo -ne "$songinfo" | grep '"title"' | cut -c 10- | rev | cut -c 2- | rev | tr '/^?<>\:*|".' '-+-----+---' )
     filename=$(echo -ne "$title".mp3)
     songurl=$(echo -e "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
     realsongurl=$(echo -e "$songurl?client_id=$clientID")
@@ -104,9 +104,9 @@ function downlike()  {
 
     offset=0
     likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
-    echo "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset"
     while [[ $(echo "$likepage" | grep 'id') != '' ]]
     do
+        echo "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset"
         ((offset++))
         setsongID=$(echo "$likepage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
         echo ""
