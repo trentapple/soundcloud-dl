@@ -225,7 +225,7 @@ function show_help() {
     echo ""
 }
 
-function get_arg() { # Parse arguments
+function get_arg() {
 	while getopts ":l:hr" opt; do
 	  case $opt in
 	     c)
