@@ -4,16 +4,15 @@
 # Share it if you like ;)
 ##############################################################
 
-echo ''
 echo ' *---------------------------------------------------------------------------*'
 echo '|               SoundcloudMusicDownloader           |   FlyinGrub rework      |'
 echo ' *---------------------------------------------------------------------------*'
 
-function CURL(){
+function CURL(){ # Just a code shortcut
     curl -s --user-agent 'Mozilla/5.0' "$1"
 }
 
-function settags() {
+function settags() { # Set the mp3 tags
     local artist=$1
     local title=$2
     local filename=$3
@@ -41,7 +40,7 @@ function settags() {
     fi
 }
 
-function downsong() {
+function downsong() { # Parse json for one song
     url="$1"
     echo "[i] Grabbing artists page"
     page=$(CURL $url)
@@ -51,11 +50,11 @@ function downsong() {
 
 }
 
-function fromjsontomp3 {
+function fromjsontomp3 { # use the json to download info and mp3
     clientID="$2"
     songID="$1"
     songinfo=$(CURL "http://api.soundcloud.com/tracks/$songID.json?client_id=$clientID" | tr "," "\n")
-    title=$(echo -ne "$songinfo" | grep '"title"' | cut -c 10- | rev | cut -c 2- | rev | tr '/^?<>\:*|".' '-+-----+---' )
+    title=$(echo -ne "$songinfo" | grep '"title"' | cut -c 10- | rev | cut -c 2- | rev | tr -cd 'A-Za-z0-9&() _-' )
     filename=$(echo -ne "$title".mp3)
     songurl=$(echo -e "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
     realsongurl=$(echo -e "$songurl?client_id=$clientID")
@@ -73,7 +72,7 @@ function fromjsontomp3 {
     fi
 }
 
-function downlike()  {
+function downlike()  { # Parse json for all user's like
     echo "[i] Grabbing artist's likes page"
     artistnm=$(echo "$1" | cut -d '/' -f 4)
     likeurl=$(echo "http://soundcloud.com/$artistnm")
@@ -82,23 +81,23 @@ function downlike()  {
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
 
-    offset=0
+    offset=$default_offset
     likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
     while [[ $(echo "$likepage" | grep 'id') != '' ]]
     do
         echo "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset"
-        ((offset++))
         setsongID=$(echo "$likepage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
         echo ""
         echo "[i] Song liked n°$offset by $artistnm"
         fromjsontomp3 "$setsongID" "$clientID"
+        ((offset++))
         likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
     done
     echo ""
     echo "[i] There was $offset songs."
 }
 
-function downset() {
+function downset() { # Parse json for one user's set
     echo "[i] Grabbing set page"
     url="$1"
     setpage=$(CURL $url)
@@ -113,11 +112,11 @@ function downset() {
     echo "https://api.soundcloud.com/playlists/$playlistID.json?limit=1&offset=$setOffset&client_id=$clientID"
     while [[ "$trackExist" != '[]' && "$trackExist" != '' ]]
     do
-        ((setOffset++))
         setsongID=$(echo "$setpage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
         echo ""
         echo "[i] Song n°$setOffset from the Set : $setTitle"
         fromjsontomp3 "$setsongID" "$clientID"
+        ((setOffset++))
         setpage=$(CURL "https://api.soundcloud.com/playlists/$playlistID.json?limit=1&offset=$setOffset&client_id=$clientID")
         trackExist=$(echo "$setpage" | tr "," "\n" | grep '"tracks"' | cut -d ':' -f 2)
     done
@@ -125,18 +124,17 @@ function downset() {
     echo "[i] There was $setOffset songs in the set $setTitle."
 }
 
-function downallsongs() {
+function downallsongs() { # Parse json for all user's songs
     url="$1"
     echo "[i] Grabbing artists page"
     page=$(CURL $url)
     clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
     artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
     echo ""
-    offset=0
+    offset=$default_offset
     artistpage=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID")
     while [[ $(echo "$artistpage" | grep 'id') != '' ]]
     do
-        ((offset++))
         playlist=$(echo "$artistpage" | tr "," "\n" | grep '"playlist"' | cut -c 14-)
         
         if [[ "$playlist" != "null" ]]; then
@@ -161,13 +159,14 @@ function downallsongs() {
                 downsong "$artistsongurl"
             fi            
         fi
+        ((offset++))
         artistpage=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID")
     done
     echo ""
     echo "[i] There was $offset songs/sets."
 }
 
-function downallsets() {
+function downallsets() { # Parse json for all user's sets
     artistnm=$(echo "$1" | cut -d '/' -f 4)
     seturl=$(echo "http://soundcloud.com/$artistnm")
     echo "[i] Grabbing artist's set page"
@@ -180,12 +179,12 @@ function downallsets() {
     echo "https://api.soundcloud.com/users/$artistID/playlists.json?limit=1&offset=$all_offset&client_id=$clientID"
     while [[ $(echo "$allsetpage" | grep 'id') != '' ]]
     do
-        ((all_offset++))
         thisset=$(echo "$allsetpage" | tr "," "\n" | grep '"permalink_url"'  | sed -n 1p | cut -d '"' -f 4) 
         echo ""
         echo "[i] Set n°$all_offset from $artistnm"
         downset "$thisset"
         echo "[i] Set n°$all_offset from $artistnm downloaded"
+        ((all_offset++))
         allsetpage=$(CURL "https://api.soundcloud.com/users/$artistID/playlists.json?limit=1&offset=$all_offset&client_id=$clientID")
     done
     echo ""
@@ -193,7 +192,7 @@ function downallsets() {
 
 }
 
-function downgroup() {
+function downgroup() { # Parse json for a group
     groupurl="$1"
     echo "[i] Grabbing group page"
     groupage=$(CURL "$groupurl")
@@ -212,86 +211,120 @@ function downgroup() {
     done
 }
 
-function show_help() {
+function show_help() { # Display some help
+    all=$1
     echo ""
-    echo "[i] Usage: `basename $0` [url]"
+    echo "[i] Usage: scdl [OPTION] -l [URL]"
     echo "    With url like :"
     echo "        http://soundcloud.com/user (Download all of one user's songs)"
     echo "        http://soundcloud.com/user/song-name (Download one single song)"
     echo "        http://soundcloud.com/user/sets (Download all of one user's sets)"
     echo "        http://soundcloud.com/user/sets/set-name (Download one single set)"
-    echo ""
-    echo "   Downloaded file names like : "title.mp3""
-    echo ""
+    if [[ "$all" == "full" ]]; then
+        echo ""
+        echo ""
+        echo "OPTION :"
+        echo ""
+        echo "  -l [URL]        Use this Url. (Necessary) "
+        echo "  -o [OFFSET]     Begin the download with a custom offset."
+        echo "  -p [PATH]       Use a custom path for this time."  
+        echo "  -c              Script will continue if a sound as already been downloaded."
+        echo "  -r              Download only the repost."
+        echo "  -h              Show this help."    
+    else
+        echo ""
+        echo "Try « scdl -h » for more information."
+    fi           
 }
 
 function get_arg() { # Parse arguments
-	while getopts ":l:hr" opt; do
-	  case $opt in
-	     c)
-	      cont=":"
-	      ;;
-	     r)
-	      onlyrepost=1
-	      ;;
-	     o)
-	      default_offset=$OPTARG
-	      ;;
-	     l)
-	      userLink=$OPTARG
-	      ;;
-	    \?)
-              echo "Invalid option."
-	      show_help
-	      exit 1
-	      ;;
-	    :)
-	      echo "Option -$OPTARG requires an argument."
-	      show_help
-	      exit 1
-	      ;;
-	  esac
-	done
-	shift $((OPTIND-1))
-}
-
-function init() { # Init some variable and check system for required tools
-	# Defaut value
-	clientID="b45b1aa10f1ac2941910a7f0d10f8e28"
-	writags=1
-	onlyrepost=0
-	cont=exit
-	
-	# Check system for curl & eyed3
-	command -v curl &>/dev/null || { echo "[!] cURL needs to be installed in order to run the script."; echo "[!] The script will exit..."; exit 1; }
-	command -v eyeD3 &>/dev/null || { echo "[!] eyeD3 needs to be installed to write tags into mp3 file."; echo "[!] The script will skip this part..."; writags=0; }
-	echo "[i] Using" `curl -V` | cut -c-21
+    while getopts "cro:l:p:h" opt
+    do
+        case $opt in
+            h)
+                show_help full; exit 1
+                ;;
+            c)
+                cont=":"
+                continue_info='continue'
+                ;;
+            r)
+                onlyrepost=1
+                ;;
+            o) # Need argument
+                default_offset=$OPTARG
+                if ! [[ $default_offset =~ $number ]] ; then
+                    echo "[!] Offset should be a number"; exit 1
+                fi
+                ;;
+            l) # Need argument
+                userLink=$OPTARG
+                ;;
+            p) # Need argument
+                if [ -d "$OPTARG" ]; then
+                    pathtomusic="$OPTARG"
+                else
+                    echo '[!] Directory specified does not exist.'; show_help; exit 1
+                fi
+                ;;
+            \?)
+                show_help; exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND-1))
+    [[ "$userLink" == '' ]] && echo '[!] You need to specify the URL' && show_help && exit 1
 }
 
 function config() { # Check for the path where download music
     if [ -f "/$HOME/.scdl.cfg" ]; then
         source "/$HOME/.scdl.cfg"
-        cd "$pathtomusic"
-        echo "[i] Path where i will download music : $pathtomusic"
-        echo "[i] I will $cont if i found a file that already exist"
     else
         echo '[i] The config file do not exist...'
-        echo '[i] Please run the Installer first or add The sample config file'
+        echo '[i] Please run the Installer first or add the sample config file'
         exit
     fi
 }
 
+function init() { # Init some variable
+    clientID="b45b1aa10f1ac2941910a7f0d10f8e28"
+    writags=1
+    default_offset=0
+    onlyrepost=0
+    cont=exit
+    continue_info='exit'
+    number='^[0-9]+$'
+}
+
+function check_sys() { # Check system for curl & eyed3
+    command -v curl &>/dev/null || { echo "[!] cURL needs to be installed in order to run the script."; echo "[!] The script will exit..."; exit 1; }
+    command -v eyeD3 &>/dev/null || { echo "[!] eyeD3 needs to be installed to write tags into mp3 file."; echo "[!] The script will skip this part..."; writags=0; }
+    echo "[i] Using" `curl -V` | cut -c-21
+}
+
+# Launch function
 config
 init
-get_arg
+get_arg $@
+check_sys
+
+# Go to path
+cd "$pathtomusic"
 
 # Play with the soundcloud url
 soundurl=$(echo "$userLink" | sed 's-.*soundcloud.com/-http://soundcloud.com/-' | cut -d "?" -f 1 | grep 'soundcloud.com')
-echo "[i] Using URL $soundurl"
+echo "[i] Using URL : $soundurl"
 d1="$(echo "$soundurl" | cut -d "/" -f 4)"
 d2="$(echo "$soundurl" | cut -d "/" -f 5)"
 d3="$(echo "$soundurl" | cut -d "/" -f 6)"
 
+# Display info of the current configuration
+echo "[i] Path where i will download music : $pathtomusic"
+echo "[i] I will $continue_info if i found a file that already exist"
+[[ "$onlyrepost" == '1' ]] && echo "[i] I will only download reposted sound"
+[[ "$default_offset" != '0' ]] && echo "[i] I will begin the download at $default_offset sound"
+
+# Choose the right URL type
 if [[ "$d1" == "" ]] ; then
     echo "[!] Bad URL!"
     show_help
