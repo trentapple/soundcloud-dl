@@ -12,7 +12,7 @@ echo ''
 function menu() {
     clear
     PS3='Please enter your choice: '
-    local options=("Install" "Set the path where to download Music" "Set the behaviour when the script encounter a music that already exist" "Quit")
+    local options=("Install" "Set the path where to download Music" "Quit")
     select opt in "${options[@]}"
     do
         case "$opt" in
@@ -20,8 +20,6 @@ function menu() {
                 install ;;
             "Set the path where to download Music")
                 setpath ;;
-            "Set the behaviour when the script encounter a music that already exist")
-                setcon ;;
             "Quit")
                 quit ;;
             *)
@@ -59,22 +57,6 @@ function setpath() {
         echo -e 'Path set !\n'
 }
 
-function setcon() {
-    read -p "Would you like to stop the script when it encounter a music that already exist ?(y/n)" choice
-    if [ "$choice" = "y" ]; then
-        cont="false"
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > "/$HOME/.scdl.cfg"
-        echo -e 'The script will exit if it encounter a file that already exist\n'
-    elif [ "$choice" = "n" ]; then
-        cont="true"
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > "/$HOME/.scdl.cfg"
-        echo -e 'The script will skip the music that already exist\n'
-    else
-        echo 'Bad option'
-        setcon
-    fi
-}
-
 function quit() {
     read -p 'Do you really want to leave the installer? (y/n) ' quit
     case "$quit" in
@@ -97,13 +79,11 @@ function detectedOS(){
 if [ -f "/$HOME/.scdl.cfg" ]; then
     source "/$HOME/.scdl.cfg"
     path=$pathtomusic
-    cont=$continue
     menu
 else
     echo -e 'No Config file detected... I will install scdl for you.\n'
     install
     setpath
-    setcon
     exit
 fi
 

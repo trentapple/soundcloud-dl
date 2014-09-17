@@ -54,7 +54,7 @@ function fromjsontomp3 { # use the json to download info and mp3
     clientID="$2"
     songID="$1"
     songinfo=$(CURL "http://api.soundcloud.com/tracks/$songID.json?client_id=$clientID" | tr "," "\n")
-    title=$(echo -ne "$songinfo" | grep '"title"' | cut -c 10- | rev | cut -c 2- | rev | tr -cd 'A-Za-z0-9&() _-' )
+    title=$(echo -ne "$songinfo" | grep '"title"' | cut -c 10- | rev | cut -c 2- | rev | tr '\/:*?|<>' '________' )
     filename=$(echo -ne "$title".mp3)
     songurl=$(echo -e "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
     realsongurl=$(echo -e "$songurl?client_id=$clientID")

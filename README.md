@@ -25,12 +25,17 @@ It should work with OS X, any Linux OS.
 1. Download [this](https://github.com/lukapusic/soundcloud-dl/archive/master.zip)
 2. Unzip
 3. You can use the auto installer : `./install` (Support Debian/arch)
-4. Type `scdl {URL} {OPTION}`
+4. Type `scdl {OPTION} -l {URL}`
 
-* MORE : For help type `scdl -h` or `scdl -help` or `scdl`
+* MORE : For help type `scdl -h`
 
-##OPTIONS available
-* `--onlyrepost` used with an user's page will download only the user's repost. It will be ignored otherwise.
+## OPTIONS available
+* `-l [URL]       ` Use this Url. (Necessary) 
+* `-o [OFFSET]    ` Begin the download with a custom offset.
+* `-p [PATH]      ` Use a custom path for this time.  
+* `-c             ` Script will continue if a sound as already been downloaded.
+* `-r             ` Download only the repost.
+* `-h             ` Show this help.   
 
 ## Features
 
@@ -46,12 +51,6 @@ It should work with OS X, any Linux OS.
 * Set tags with eyeD3 (skip the tag if eyeD3 is not installed)
 * The script stop when he see one song that is already downloaded
 * You can use it as a sync script as i do with my Raspberry PI, each night it launch the script with my soudncloud and if new song has been reposted it download it and stop when it encounter a song that has already been downloaded.
-
-
-## More information
-
-Changelogs of the latest update : [Here](https://github.com/lukapusic/soundcloud-dl/commit/372f1cafd20868c58d0d6edd940a96071fd9449f#commitcomment-7174011)
-
 
 ## License
 
