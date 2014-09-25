@@ -311,8 +311,8 @@ function check_sys() { # Check system for curl & eyed3
 }
 
 # Launch function
-config
 init
+config
 get_arg $@
 check_sys
 
