@@ -18,10 +18,14 @@ function grep() {
 
 function CURL(){ # Just a code shortcut
     if [[ "$debug" == 1 ]] ; then
-        echo ">>> $1" 1>&2
-        curl -vs --user-agent 'Mozilla/5.0' "$1" 1>&2
+        exec 5>&1
+        echo ">>> $1" 1>&5
+        echo "" 1>&5
+        command curl -sv --user-agent 'Mozilla/5.0' "$1" >(cat - >&5)
+        exec 5<&-
+    else
+        command curl -s --user-agent 'Mozilla/5.0' "$1"
     fi
-    command curl -s --user-agent 'Mozilla/5.0' "$1"
 }
 
 function settags() { # Set the mp3 tags
@@ -239,7 +243,7 @@ function show_help() { # Display some help
 }
 
 function get_arg() { # Parse arguments
-    while getopts "cro:l:p:h:d" opt
+    while getopts "cro:l:p:hd" opt
     do
         case $opt in
             h)
@@ -316,7 +320,7 @@ check_sys
 cd "$pathtomusic"
 
 # Play with the soundcloud url
-soundurl=$(echo "$userLink" | sed 's-.*soundcloud.com/-https://soundcloud.com/-' | cut -d "?" -f 1 | grep 'soundcloud.com')
+soundurl=$(echo "$userLink" | sed 's-.*soundcloud.com/-https://soundcloud.com/-' | cut -d "?" -f 1)
 echo "[i] Using URL : $soundurl"
 d1="$(echo "$soundurl" | cut -d "/" -f 4)"
 d2="$(echo "$soundurl" | cut -d "/" -f 5)"
