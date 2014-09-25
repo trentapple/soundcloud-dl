@@ -8,7 +8,7 @@ echo ' *------------------------------------------------------------------------
 echo '|               SoundcloudMusicDownloader           |   FlyinGrub rework      |'
 echo ' *---------------------------------------------------------------------------*'
 
-grep() {
+function grep() {
     if hash ggrep 2>/dev/null; then
         ggrep "$@"
     else
@@ -18,10 +18,10 @@ grep() {
 
 function CURL(){ # Just a code shortcut
     if [[ "$debug" == 1 ]] ; then
-        command curl -v -s --user-agent 'Mozilla/5.0' "$1"
-    else
-        command curl -s --user-agent 'Mozilla/5.0' "$1"
+        echo ">>> $1" 1>&2
+        curl -vs --user-agent 'Mozilla/5.0' "$1" 1>&2
     fi
+    command curl -s --user-agent 'Mozilla/5.0' "$1"
 }
 
 function settags() { # Set the mp3 tags

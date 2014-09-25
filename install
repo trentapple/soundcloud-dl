@@ -47,7 +47,7 @@ function install() {
 function setpath() {
     echo "Where do you want to download your Music?"
     read -p 'path : ' path
-    while [ ! -d "$path" ]
+    while [[ ! -d "$path" ]]
     do
         echo 'The path do not exist...'
         read -p 'Would you like to Create it? (y/n)?' choice
@@ -81,7 +81,7 @@ function detectedOS(){
     [[ -f /etc/arch-release    ]] && platform='arch'
 }
 
-if [ -f "$HOME/.scdl.cfg" ]; then
+if [[ -f "$HOME/.scdl.cfg" ]]; then
     source "$HOME/.scdl.cfg"
     path=$pathtomusic
     menu
