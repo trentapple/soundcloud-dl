@@ -36,13 +36,18 @@ function install() {
     [[ "$platform" == 'redhat' ]] && sudo yum install curl python-eyed3
     [[ "$platform" == 'arch'   ]] && sudo pacman -S curl python2-eyed3
 
-    sudo cp scdl /usr/bin/
+    if [[ "$platform" == 'darwin' ]] ; then
+        brew instal grep curl eyeD3
+        cp scdl /usr/local/bin/
+    else
+        sudo cp scdl /usr/bin/
+    fi
 }
 
 function setpath() {
     echo "Where do you want to download your Music?"
     read -p 'path : ' path
-    while [ ! -d "$path" ]
+    while [[ ! -d "$path" ]]
     do
         echo 'The path do not exist...'
         read -p 'Would you like to Create it? (y/n)?' choice
@@ -53,7 +58,7 @@ function setpath() {
         echo "Where do you want to download your Music?"
         read -p 'path : ' path
     done
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > "/$HOME/.scdl.cfg"
+        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > "$HOME/.scdl.cfg"
         echo -e 'Path set !\n'
 }
 
@@ -76,8 +81,8 @@ function detectedOS(){
     [[ -f /etc/arch-release    ]] && platform='arch'
 }
 
-if [ -f "/$HOME/.scdl.cfg" ]; then
-    source "/$HOME/.scdl.cfg"
+if [[ -f "$HOME/.scdl.cfg" ]]; then
+    source "$HOME/.scdl.cfg"
     path=$pathtomusic
     menu
 else

@@ -8,8 +8,24 @@ echo ' *------------------------------------------------------------------------
 echo '|               SoundcloudMusicDownloader           |   FlyinGrub rework      |'
 echo ' *---------------------------------------------------------------------------*'
 
+function grep() {
+    if hash ggrep 2>/dev/null; then
+        ggrep "$@"
+    else
+        grep "$@"
+    fi
+}
+
 function CURL(){ # Just a code shortcut
-    curl -s --user-agent 'Mozilla/5.0' "$1"
+    if [[ "$debug" == 1 ]] ; then
+        exec 5>&1
+        echo ">>> $1" 1>&5
+        echo "" 1>&5
+        command curl -sv --user-agent 'Mozilla/5.0' "$1" >(cat - >&5)
+        exec 5<&-
+    else
+        command curl -s --user-agent 'Mozilla/5.0' "$1"
+    fi
 }
 
 function settags() { # Set the mp3 tags
@@ -43,17 +59,14 @@ function settags() { # Set the mp3 tags
 function downsong() { # Parse json for one song
     url="$1"
     echo "[i] Grabbing artists page"
-    page=$(CURL $url)
-    clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    songID=$(echo "$page" | grep -v "small" | grep -oE "data-sc-track=.[0-9]*" | grep -oE "[0-9].*" | sort | uniq)
+    songID=$(CURL "https://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -oE 'https:\/\/.*\?' | grep -oE '[0-9]*')
     fromjsontomp3 "$songID" "$clientID"
-
 }
 
 function fromjsontomp3 { # use the json to download info and mp3
     clientID="$2"
     songID="$1"
-    songinfo=$(CURL "http://api.soundcloud.com/tracks/$songID.json?client_id=$clientID" | tr "," "\n")
+    songinfo=$(CURL "https://api.soundcloud.com/tracks/$songID.json?client_id=$clientID" | tr "," "\n")
     title=$(echo -ne "$songinfo" | grep '"title"' | cut -c 10- | rev | cut -c 2- | rev | tr '\/:*?|<>' '________' )
     filename=$(echo -ne "$title".mp3)
     songurl=$(echo -e "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
@@ -75,41 +88,36 @@ function fromjsontomp3 { # use the json to download info and mp3
 function downlike()  { # Parse json for all user's like
     echo "[i] Grabbing artist's likes page"
     artistnm=$(echo "$1" | cut -d '/' -f 4)
-    likeurl=$(echo "http://soundcloud.com/$artistnm")
-    page=$(CURL $likeurl)
-
-    clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
+    likeurl=$(echo "https://soundcloud.com/$artistnm")
+    artistID=$(CURL "https://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
 
     offset=$default_offset
-    likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
+    likepage=$(CURL "https://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
     while [[ $(echo "$likepage" | grep 'id') != '' ]]
     do
-        echo "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset"
+        [[ "$debug" == '1' ]] && echo "https://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset"
         setsongID=$(echo "$likepage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
         echo ""
         echo "[i] Song liked n°$offset by $artistnm"
         fromjsontomp3 "$setsongID" "$clientID"
         ((offset++))
-        likepage=$(CURL "http://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
+        likepage=$(CURL "https://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
     done
     echo ""
     echo "[i] There was $offset songs."
 }
 
 function downset() { # Parse json for one user's set
+    [[ "$debug" == '1' ]] && echo "https://api.soundcloud.com/playlists/$playlistID.json?limit=1&offset=$setOffset&client_id=$clientID"
     echo "[i] Grabbing set page"
     url="$1"
     setpage=$(CURL $url)
-
-    clientID=$(echo "$setpage" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    playlistID=$(echo -e "$setpage" | grep 'data-sc-playlist-id' | sed -n '1p'| cut -d '"' -f 4)
+    playlistID=$(CURL "https://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -oE 'https:\/\/.*\?' | grep -oE '[0-9]*')
 
     setOffset=0
     setpage=$(CURL "https://api.soundcloud.com/playlists/$playlistID.json?limit=1&offset=$setOffset&client_id=$clientID")
     setTitle=$(echo "$setpage" | tr "{" "\n" | grep '"playlist"' | tr "," "\n" | grep '"title"' | cut -d '"' -f 4)
     trackExist=$(echo "$setpage" | tr "," "\n" | grep '"tracks"' | cut -d ':' -f 2)
-    echo "https://api.soundcloud.com/playlists/$playlistID.json?limit=1&offset=$setOffset&client_id=$clientID"
     while [[ "$trackExist" != '[]' && "$trackExist" != '' ]]
     do
         setsongID=$(echo "$setpage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
@@ -128,15 +136,15 @@ function downallsongs() { # Parse json for all user's songs
     url="$1"
     echo "[i] Grabbing artists page"
     page=$(CURL $url)
-    clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
+    artistID=$(CURL "https://api.soundcloud.com/resolve.json?url=$url&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
     echo ""
+
     offset=$default_offset
     artistpage=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID")
     while [[ $(echo "$artistpage" | grep 'id') != '' ]]
     do
         playlist=$(echo "$artistpage" | tr "," "\n" | grep '"playlist"' | cut -c 14-)
-        
+
         if [[ "$playlist" != "null" ]]; then
             echo "[i] The n°$offset is a playlist"
             thisset=$(echo "$artistpage" | tr "," "\n" | grep '"permalink_url"' | sed -n 1p | cut -d '"' -f 4)
@@ -157,7 +165,7 @@ function downallsongs() { # Parse json for all user's songs
             elif [[ "$typesong" == "track_repost" ]]; then
                 artistsongurl=$(echo "$artistpage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | cut -d '"' -f 4)
                 downsong "$artistsongurl"
-            fi            
+            fi
         fi
         ((offset++))
         artistpage=$(CURL "https://api.sndcdn.com/e1/users/$artistID/sounds.json?limit=1&offset=$offset&client_id=$clientID")
@@ -168,18 +176,16 @@ function downallsongs() { # Parse json for all user's songs
 
 function downallsets() { # Parse json for all user's sets
     artistnm=$(echo "$1" | cut -d '/' -f 4)
-    seturl=$(echo "http://soundcloud.com/$artistnm")
+    seturl=$(echo "https://soundcloud.com/$artistnm")
     echo "[i] Grabbing artist's set page"
     page=$(CURL $seturl)
-    clientID=$(echo "$page" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    artistID=$(CURL "http://api.soundcloud.com/resolve.json?url=$seturl&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
+    artistID=$(CURL "https://api.soundcloud.com/resolve.json?url=$seturl&client_id=$clientID" | grep -oE "([0-9])+\." | tr -d ".")
 
     all_offset=0
     allsetpage=$(CURL "https://api.soundcloud.com/users/$artistID/playlists.json?limit=1&offset=$all_offset&client_id=$clientID")
-    echo "https://api.soundcloud.com/users/$artistID/playlists.json?limit=1&offset=$all_offset&client_id=$clientID"
     while [[ $(echo "$allsetpage" | grep 'id') != '' ]]
     do
-        thisset=$(echo "$allsetpage" | tr "," "\n" | grep '"permalink_url"'  | sed -n 1p | cut -d '"' -f 4) 
+        thisset=$(echo "$allsetpage" | tr "," "\n" | grep '"permalink_url"'  | sed -n 1p | cut -d '"' -f 4)
         echo ""
         echo "[i] Set n°$all_offset from $artistnm"
         downset "$thisset"
@@ -189,7 +195,6 @@ function downallsets() { # Parse json for all user's sets
     done
     echo ""
     echo "[i] There was $all_offset sets."
-
 }
 
 function downgroup() { # Parse json for a group
@@ -197,8 +202,7 @@ function downgroup() { # Parse json for a group
     echo "[i] Grabbing group page"
     groupage=$(CURL "$groupurl")
     groupid=$(echo "$groupage" | grep "html5-code-groups" | tr " " "\n" | grep "html5-code-groups-" | cut -d '"' -f 2 | sed '2d' | cut -d '-' -f 4)
-    clientID=$(echo "$groupage" | grep "clientID" | tr "," "\n" | grep "clientID" | cut -d '"' -f 4)
-    trackspage=$(CURL "http://api.soundcloud.com/groups/$groupid/tracks.json?client_id=$clientID" | tr "}" "\n")
+    trackspage=$(CURL "https://api.soundcloud.com/groups/$groupid/tracks.json?client_id=$clientID" | tr "}" "\n")
     trackspage=$(echo "$trackspage" | tr "," "\n" | grep 'permalink_url' | sed '1d' | sed -n '1~2p')
     songcount=$(echo "$trackspage" | wc -l)
     echo "[i] Found $songcount songs!"
@@ -216,10 +220,10 @@ function show_help() { # Display some help
     echo ""
     echo "[i] Usage: scdl [OPTION] -l [URL]"
     echo "    With url like :"
-    echo "        http://soundcloud.com/user (Download all of one user's songs)"
-    echo "        http://soundcloud.com/user/song-name (Download one single song)"
-    echo "        http://soundcloud.com/user/sets (Download all of one user's sets)"
-    echo "        http://soundcloud.com/user/sets/set-name (Download one single set)"
+    echo "        https://soundcloud.com/user (Download all of one user's songs)"
+    echo "        https://soundcloud.com/user/song-name (Download one single song)"
+    echo "        https://soundcloud.com/user/sets (Download all of one user's sets)"
+    echo "        https://soundcloud.com/user/sets/set-name (Download one single set)"
     if [[ "$all" == "full" ]]; then
         echo ""
         echo ""
@@ -227,18 +231,19 @@ function show_help() { # Display some help
         echo ""
         echo "  -l [URL]        Use this Url. (Necessary) "
         echo "  -o [OFFSET]     Begin the download with a custom offset."
-        echo "  -p [PATH]       Use a custom path for this time."  
+        echo "  -p [PATH]       Use a custom path for this time."
         echo "  -c              Script will continue if a sound as already been downloaded."
         echo "  -r              Download only the repost."
-        echo "  -h              Show this help."    
+        echo "  -d              Debug."
+        echo "  -h              Show this help."
     else
         echo ""
         echo "Try « scdl -h » for more information."
-    fi           
+    fi
 }
 
 function get_arg() { # Parse arguments
-    while getopts "cro:l:p:h" opt
+    while getopts "cro:l:p:hd" opt
     do
         case $opt in
             h)
@@ -266,6 +271,9 @@ function get_arg() { # Parse arguments
                 else
                     echo '[!] Directory specified does not exist.'; show_help; exit 1
                 fi
+                ;;
+            d) # debug
+                debug=1
                 ;;
             \?)
                 show_help; exit 1
@@ -299,12 +307,12 @@ function init() { # Init some variable
 function check_sys() { # Check system for curl & eyed3
     command -v curl &>/dev/null || { echo "[!] cURL needs to be installed in order to run the script."; echo "[!] The script will exit..."; exit 1; }
     command -v eyeD3 &>/dev/null || { echo "[!] eyeD3 needs to be installed to write tags into mp3 file."; echo "[!] The script will skip this part..."; writags=0; }
-    echo "[i] Using" `curl -V` | cut -c-21
+    [[ "$debug" == '1' ]] && echo "[i] Using" `curl -V` | cut -c-21
 }
 
 # Launch function
-config
 init
+config
 get_arg $@
 check_sys
 
@@ -312,7 +320,7 @@ check_sys
 cd "$pathtomusic"
 
 # Play with the soundcloud url
-soundurl=$(echo "$userLink" | sed 's-.*soundcloud.com/-http://soundcloud.com/-' | cut -d "?" -f 1 | grep 'soundcloud.com')
+soundurl=$(echo "$userLink" | sed 's-.*soundcloud.com/-https://soundcloud.com/-' | cut -d "?" -f 1)
 echo "[i] Using URL : $soundurl"
 d1="$(echo "$soundurl" | cut -d "/" -f 4)"
 d2="$(echo "$soundurl" | cut -d "/" -f 5)"

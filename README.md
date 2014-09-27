@@ -35,6 +35,7 @@ It should work with OS X, any Linux OS.
 * `-p [PATH]      ` Use a custom path for this time.  
 * `-c             ` Script will continue if a sound as already been downloaded.
 * `-r             ` Download only the repost.
+* `-d             ` Debug mode.
 * `-h             ` Show this help.   
 
 ## Features
