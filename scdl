@@ -295,7 +295,6 @@ function config() { # Check for the path where download music
 }
 
 function init() { # Init some variable
-    clientID="b45b1aa10f1ac2941910a7f0d10f8e28"
     writags=1
     default_offset=0
     onlyrepost=0
@@ -331,6 +330,7 @@ echo "[i] Path where i will download music : $pathtomusic"
 echo "[i] I will $continue_info if i found a file that already exist"
 [[ "$onlyrepost" == '1' ]] && echo "[i] I will only download reposted sound"
 [[ "$default_offset" != '0' ]] && echo "[i] I will begin the download at $default_offset sound"
+[[ "$debug" == '1' ]] && echo "[i] Using clientID : $clientID"
 
 # Choose the right URL type
 if [[ "$d1" == "" ]] ; then
