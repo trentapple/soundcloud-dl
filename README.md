@@ -17,14 +17,14 @@ It should work with OS X, any Linux OS.
 ## Required tools
 
 * You will need `eyeD3` ; `curl`
-* The installer install all the required tools except for Mac Os X.
+* Only OSX : `brew`
 
 
 ## Instructions
 
 1. Download [this](https://github.com/lukapusic/soundcloud-dl/archive/master.zip)
 2. Unzip
-3. You can use the auto installer : `./install` (Support Debian/arch)
+3. You can use the auto installer : `./install` (Support Debian/arch/osX)
 4. Type `scdl {OPTION} -l {URL}`
 
 * MORE : For help type `scdl -h`
