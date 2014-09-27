@@ -42,6 +42,7 @@ function install() {
     else
         sudo cp scdl /usr/bin/
     fi
+    cp example_.scdl.cfg $HOME/
 }
 
 function setpath() {
