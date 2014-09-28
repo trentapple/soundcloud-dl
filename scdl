@@ -61,6 +61,8 @@ function fromjsontomp3 { # use the json to download info and mp3
     artist=$(echo -e "$songinfo" | grep "username" | cut -d '"' -f 4)
     imageurl=$(echo -e "$songinfo" | grep "artwork_url" | cut -d '"' -f 4 | sed 's/large/t500x500/g')
     genre=$(echo -e "$songinfo" | grep "genre" | cut -d '"' -f 4)
+    songpermalink=$(echo -e "$songinfo" | grep -m2 "permalink_url" | tail -n1 | cut -d '"' -f 4)
+	[[ "$debug" == '1' ]] && echo "[i] Track permalink_url : $songpermalink"
 
     if [ -e "$filename" ]; then
         echo "[!] The song $filename has already been downloaded..."  && $cont
