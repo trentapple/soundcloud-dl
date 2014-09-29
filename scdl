@@ -324,6 +324,7 @@ echo "[i] I will $continue_info if i found a file that already exist"
 [[ "$onlyrepost" == '1' ]] && echo "[i] I will only download reposted sound"
 [[ "$default_offset" != '0' ]] && echo "[i] I will begin the download at $default_offset sound"
 [[ "$debug" == '1' ]] && echo "[i] Using clientID : $clientID"
+[[ "$debug" == '1' ]] && echo "[i] Using "`eyeD3 --version  2>&1 | grep -m1 eye | cut -d " " -f -2`
 
 # Choose the right URL type
 if [[ "$d1" == "" ]] ; then
