@@ -31,7 +31,7 @@ function settags() { # Set the mp3 tags
             --add-image="/tmp/1.jpg:MEDIA" \
             --add-image="/tmp/1.jpg:OTHER_ICON" \
             --add-image="/tmp/1.jpg:FRONT_COVER" \
-            --artist="$artist" --year=$(date +%Y) --genre="$genre" \
+            --artist="$artist" -Y $(date +%Y) --genre="$genre" \
             --title="$title" --album="$album" --v2 "$filename" &>/dev/null
 
         echo '[i] Setting tags finished!'
