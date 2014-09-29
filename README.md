@@ -22,21 +22,30 @@ It should work with OS X, any Linux OS.
 
 ## Instructions
 
+### Just in case :
 1. Download [this](https://github.com/lukapusic/soundcloud-dl/archive/master.zip)
 2. Unzip
-3. You can use the auto installer : `./install` (Support Debian/arch/osX)
-4. Type `scdl {OPTION} -l {URL}`
 
-* MORE : For help type `scdl -h`
+### Lazy Install :
+1. You can use the auto installer : `./install` (Support Debian/arch/osX)
+
+### Manual Install :
+1. Place .scdl.cfg in your $HOME (and edit the path)
+2. Be sure that you have all the required tools.
+3. Place scdl in a folder that is in your $PATH (/usr/local/bin/ on OSX, /usr/bin/ for other distro by defaut)
+
+### Fire :
+1. Type `scdl {OPTION} -l {URL}`
+* For help type `scdl -h`
 
 ## OPTIONS available
-* `-l [URL]       ` Use this Url. (Necessary) 
+* `-l [URL]       ` Use this Url. (Necessary)
 * `-o [OFFSET]    ` Begin the download with a custom offset.
 * `-p [PATH]      ` Use a custom path for this time.  
 * `-c             ` Script will continue if a sound as already been downloaded.
 * `-r             ` Download only the repost.
 * `-d             ` Debug mode.
-* `-h             ` Show this help.   
+* `-h             ` Show this help.
 
 ## Features
 
