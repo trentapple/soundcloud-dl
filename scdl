@@ -86,7 +86,7 @@ function fromjsontomp3 { # use the json to download info and mp3
     imageurl=$(echo -e "$songinfo" | grep "artwork_url" | cut -d '"' -f 4 | sed 's/large/t500x500/g')
     genre=$(echo -e "$songinfo" | grep "genre" | cut -d '"' -f 4)
     songpermalink=$(echo -e "$songinfo" | grep -m2 "permalink_url" | tail -n1 | cut -d '"' -f 4)
-	log 4 "[i] Track permalink_url : $songpermalink"
+	log 4 "Track permalink_url : $songpermalink"
 
     if [ -e "$filename" ]; then
         log 1 "The song $filename has already been downloaded..."  && $cont
@@ -261,7 +261,7 @@ function show_help() { # Display some help
 }
 
 function get_arg() { # Parse arguments
-    while getopts "cro:l:p:hd" opt
+    while getopts "cro:l:p:hdq" opt
     do
         case $opt in
             h)
