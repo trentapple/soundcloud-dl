@@ -28,11 +28,16 @@ It should work with OS X, any Linux OS.
 
 ### Lazy Install :
 1. You can use the auto installer : `./install` (Support Debian/arch/osX)
+2. Check that your .scdl.cfg is in $HOME
+3. Add you own path to it
+4. Check that there is a clientID and add your own if you want
 
 ### Manual Install :
-1. Place .scdl.cfg in your $HOME (and edit the path)
-2. Be sure that you have all the required tools.
-3. Place scdl in a folder that is in your $PATH (/usr/local/bin/ on OSX, /usr/bin/ for other distro by defaut)
+1. Place .scdl.cfg in your $HOME
+2. Add you own path to it
+3. Check that there is a clientID and add your own if you want
+4. Be sure that you have all the required tools.
+5. Place scdl in a folder that is in your $PATH (/usr/local/bin/ on OSX, /usr/bin/ for other distro by default)
 
 ### Fire :
 1. Type `scdl {OPTION} -l {URL}`
