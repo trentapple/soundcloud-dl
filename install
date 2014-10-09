@@ -9,26 +9,6 @@ echo '|                             SCDL Installer                              
 echo ' *---------------------------------------------------------------------------*'
 echo ''
 
-function menu() {
-    clear
-    PS3='Please enter your choice: '
-    local options=("Install" "Set the path where to download Music" "Quit")
-    select opt in "${options[@]}"
-    do
-        case "$opt" in
-            "Install")
-                install ;;
-            "Set the path where to download Music")
-                setpath ;;
-            "Quit")
-                quit ;;
-            *)
-                clear && echo "Bad option"
-                ;;
-        esac
-    done
-}
-
 function install() {
     detectedOS
 
@@ -45,36 +25,6 @@ function install() {
     cp .scdl.cfg $HOME/
 }
 
-function setpath() {
-    echo "Where do you want to download your Music?"
-    read -p 'path : ' path
-    while [[ ! -d "$path" ]]
-    do
-        echo 'The path do not exist...'
-        read -p 'Would you like to Create it? (y/n)?' choice
-        if [ "$choice" = "y" ]; then
-            mkdir $path
-            "$?" && echo -e 'Error while creating the directory, living...' && exit 1
-        fi
-        echo "Where do you want to download your Music?"
-        read -p 'path : ' path
-    done
-        echo -e 'pathtomusic="'"$path"'"'"\n"'continue="'"$cont"'"' > "$HOME/.scdl.cfg"
-        echo -e 'Path set !\n'
-}
-
-function quit() {
-    read -p 'Do you really want to leave the installer? (y/n) ' quit
-    case "$quit" in
-        "y")
-            echo 'Bye!' && exit ;;
-        "n")
-            echo '' && menu ;;
-        *)
-            echo 'Bad option' && quit ;;
-    esac
-}
-
 function detectedOS(){
     unamestr=$(uname)
     platform=$(echo "$unamestr" | tr '[:upper:]' '[:lower:]')
@@ -82,13 +32,21 @@ function detectedOS(){
     [[ -f /etc/arch-release    ]] && platform='arch'
 }
 
+function init(){
 if [[ -f "$HOME/.scdl.cfg" ]]; then
-    source "$HOME/.scdl.cfg"
-    path=$pathtomusic
-    menu
+    read -p 'Would you like to reinstall ?\n' reinstall
+    case "$reinstall" in
+        "y")
+            echo 'Installation...' && install;;
+        "n")
+            echo 'Bye!';;
+        *)
+            echo 'Bad option' && init;;
+    esac
 else
     echo -e 'No Config file detected... I will install scdl for you.\n'
     install
-    setpath
-    exit
 fi
+}
+
+init
