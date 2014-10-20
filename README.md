@@ -2,6 +2,8 @@
   <img src="http://soundcloud-dl.com/soundcloud-download-logo.png" alt="Logo"/>
 </p>
 # Souncloud Music Downloader
+## Changelog : MUST READ !
+* the .scdl.cfg has been changed a few time ago before reporting any issue be sure you have the latest one in your $HOME !!
 
 ## Description
 
