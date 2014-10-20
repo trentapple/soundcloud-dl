@@ -4,6 +4,7 @@
 # Souncloud Music Downloader
 ## Changelog : MUST READ !
 * the .scdl.cfg has been changed a few time ago before reporting any issue be sure you have the latest one in your $HOME !!
+* Please read the new instructions below, if you want to update/install/reinstall
 
 ## Description
 
