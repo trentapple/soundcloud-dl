@@ -13,7 +13,7 @@
     * There is a lot of tool made by the community (like **eyed3**) that can be imported very easily
     * It allow an **easier installation**
     * It will be fully **compatible** with Linux/Os x/Windows without hacking (like previously for os x)
-* The actual version is stil a **Work in Progress** but it fixes already a lot of bug that are on the bash one.
+* V1 is out !!
 * Follow the progress **[here](https://github.com/flyingrub/scdl/issues/2)**
 
 ## Python Version
