@@ -9,7 +9,7 @@
 
 ## Python Version
 
-You might consider using the python version. You can find it **[here](https://github.com/flyingrub/scdl)**
+You might want to consider using the python version. You can find it **[here](https://github.com/flyingrub/scdl)**
 
 ## Description
 
