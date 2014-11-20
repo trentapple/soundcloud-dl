@@ -3,13 +3,18 @@
 </p>
 
 # Souncloud Music Downloader
+## Python Version
+* FlyinGrub has decided to **change the language**, because the bash one started to be a little too messy...
+* He has choosen python cause it's nice, **simple**, efficient but more :
+    * There is a lot of tool made by the community (like **eyed3**) that can be imported very easily
+    * It allow an **easier installation**
+    * It will be fully **compatible** with Linux/Os x/Windows without hacking (like previously for os x)
+* It already fixes all the issues of the bash version and add others features.
+* You can find it **[here](https://github.com/flyingrub/scdl)**
+
 ## Changelog : MUST READ !
 * the .scdl.cfg has been changed a few time ago before reporting any issue be sure you have the latest one in your $HOME !!
 * Please read the new instructions below, if you want to update/install/reinstall
-
-## Python Version
-
-You might want to consider using the python version. You can find it **[here](https://github.com/flyingrub/scdl)**
 
 ## Description
 
