@@ -7,6 +7,10 @@
 * the .scdl.cfg has been changed a few time ago before reporting any issue be sure you have the latest one in your $HOME !!
 * Please read the new instructions below, if you want to update/install/reinstall
 
+## Python Version
+
+You might consider using the python version. You can find it **[here](https://github.com/flyingrub/scdl)**
+
 ## Description
 
 This shell script is able to download music from http://www.soundcloud.com.
