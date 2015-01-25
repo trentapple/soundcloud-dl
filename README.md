@@ -2,7 +2,7 @@
   <img src="http://soundcloud-dl.com/soundcloud-download-logo.png" alt="Logo"/>
 </p>
 
-# Souncloud Music Downloader
+# SoundCloud Music Downloader
 ## Python Version
 * FlyinGrub has decided to **change the language**, because the bash one started to be a little too messy...
 * He has choosen python cause it's nice, **simple**, efficient but more :
