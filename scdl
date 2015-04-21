@@ -13,23 +13,23 @@ function CURL(){ # Just a code shortcut
 }
 
 function log() { # Logging function
-	local level
-	level="$1"; shift
-	if [[ "$level" -le "$logVerbosity" ]] ; then
-		case "$level" in
-			0)
-				;;
-			1)
-				echo -n "[e]"; ;;
-			2)
-				echo -n "[w]"; ;;
-			3)
-				echo -n "[i]"; ;;
-			4)
-				echo -n "[d]"; ;;
-		esac
-		echo " $@";
-	fi
+        local level
+        level="$1"; shift
+        if [[ "$level" -le "$logVerbosity" ]] ; then
+                case "$level" in
+                        0)
+                                ;;
+                        1)
+                                echo -n "[e]"; ;;
+                        2)
+                                echo -n "[w]"; ;;
+                        3)
+                                echo -n "[i]"; ;;
+                        4)
+                                echo -n "[d]"; ;;
+                esac
+                echo " $@";
+        fi
 }
 
 function settags() { # Set the mp3 tags
@@ -76,9 +76,9 @@ function fromjsontomp3 { # use the json to download info and mp3
     songinfo=$(CURL "https://api.soundcloud.com/tracks/$songID.json?client_id=$clientID" | tr "," "\n")
     title=$(printf "%s\n" "$songinfo" | grep '"title"' | cut -c 10- | rev | cut -c 2- | rev | tr '\/:*?|<>' '________' )
     songurl=$(echo -e "$songinfo" | grep "stream_url" | cut -d '"' -f 4)
-    realsongurl=$(echo -e "$songurl?client_id=$clientID")
+    realsongurl=$(echo -e "${songurl}s.json?client_id=$clientID")
     artist=$(echo -e "$songinfo" | grep "username" | cut -d '"' -f 4)
-    if [[ $title =~ "$artist" ]] ; then 
+    if [[ $title =~ "$artist" ]] ; then
         filename=$(printf "%s.mp3" "$title")
     else
         filename=$(printf "%s - %s.mp3" "$artist" "$title")
@@ -86,13 +86,19 @@ function fromjsontomp3 { # use the json to download info and mp3
     imageurl=$(echo -e "$songinfo" | grep "artwork_url" | cut -d '"' -f 4 | sed 's/large/t500x500/g')
     genre=$(echo -e "$songinfo" | grep "genre" | cut -d '"' -f 4)
     songpermalink=$(echo -e "$songinfo" | grep -m2 "permalink_url" | tail -n1 | cut -d '"' -f 4)
-	log 4 "Track permalink_url : $songpermalink"
+        log 4 "Track permalink_url : $songpermalink"
 
     if [ -e "$filename" ]; then
         log 1 "The song $filename has already been downloaded..."  && $cont
     else
         echo "[-] Downloading $title..."
+        #curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$realsongurl"
+        echo "[-] Getting streams from $realsongurl..."
+        streaminfo=$(CURL "$realsongurl" | tr "," "\n")
+        realsongurl=$(echo -e "$streaminfo" | grep "http_mp3_128_url" | cut -d '"' -f 4)
+        echo "[-] Downloading from $realsongurl..."
         curl -# -L --user-agent 'Mozilla/5.0' -o "`echo -e "$filename"`" "$realsongurl"
+        #streamripper "$realsongurl" -a "`echo -e "$filename"`" -c -o always -u "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36"
         settags "$artist" "$title" "$filename" "$genre" "$imageurl"
         echo -e "[i] Downloading of $filename finished"
     fi
@@ -322,7 +328,7 @@ function init() { # Init some variable
     cont=exit
     continue_info='exit'
     number='^[0-9]+$'
-	logVerbosity=3
+        logVerbosity=3
 }
 
 function check_sys() { # Check system for curl & eyed3
