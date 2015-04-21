@@ -111,16 +111,26 @@ function downlike()  { # Parse json for all user's like
     log 4 "https://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID"
     artistID=$(CURL "https://api.soundcloud.com/resolve.json?url=$likeurl&client_id=$clientID" | tr "," "\n" | sed -n "1p" | cut -d ':' -f 2)
     log 4 "artistID is : $artistID"
+    userinfo=$(CURL "https://api.soundcloud.com/users/$artistID.json?client_id=$clientID" | tr "," "\n")
+    maxOffset=$(echo -e "$userinfo" | grep "likes_count" | cut -d ':' -f 2)
+    echo "Total likes count: $maxOffset"
     offset=$default_offset
     likepage=$(CURL "https://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
-    while [[ $(echo "$likepage" | grep 'id') != '' ]]
+    while [[ $(echo "$likepage" | grep 'id') != '' ]] || [[ $offset < $maxOffset ]]
     do
         log 4 "https://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset"
-        setsongID=$(echo "$likepage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
-        ((offset++))
-        echo ""
-        log 3 "Song liked n°$offset by $artistnm"
-        fromjsontomp3 "$setsongID" "$clientID"
+        if [[ $(echo "$likepage" | grep 'id') != '' ]]; then
+            setsongID=$(echo "$likepage" | tr "," "\n" | grep '"uri"' | grep 'tracks' | cut -d '"' -f 4 | cut -d '/' -f 5)
+            ((offset++))
+            echo ""
+            log 3 "Song liked n°$offset by $artistnm"
+            fromjsontomp3 "$setsongID" "$clientID"
+        else
+            ((offset++))
+            echo ""
+            log 3 "Song liked n°$offset by $artistnm (NO DATA RETURNED)"
+        fi
+
         likepage=$(CURL "https://api.soundcloud.com/users/$artistID/favorites.json?client_id=$clientID&limit=1&offset=$offset")
     done
     echo ""
